@@ -5,7 +5,6 @@ import picocli.CommandLine.Option;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 @Command(name = "Server", version = "1.0", mixinStandardHelpOptions = true)
 public class ServerCommand implements Runnable {
