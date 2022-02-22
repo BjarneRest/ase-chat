@@ -61,10 +61,13 @@ class ChatRoomServerTest {
         Message message2 = new Message("Greetings!", "Moritz");
         mockSocket2.writeLine("chat:message:send=" + message2.toJson());
 
+        // Send corrupted message from client 2
+        mockSocket2.writeLine("chat:message:send={\"mess");
+
         // Receive message 1+2
         // Collect server messages
         List<String> receivedMessages1 = mockSocket1.getBufferedOutputOfOutputStream().lines().limit(2).collect(Collectors.toList());
-        List<String> receivedMessages2 = mockSocket2.getBufferedOutputOfOutputStream().lines().limit(2).collect(Collectors.toList());
+        List<String> receivedMessages2 = mockSocket2.getBufferedOutputOfOutputStream().lines().limit(3).collect(Collectors.toList());
 
 
         assertEquals("system:ready", receivedMessages1.get(0));
@@ -73,6 +76,7 @@ class ChatRoomServerTest {
         assertEquals("chat:message:publish=" + message1.toJson(), receivedMessages2.get(1));
         assertEquals("chat:message:publish=" + message2.toJson(), receivedMessages1.get(1));
 
+        assertEquals("system:error:parsing", receivedMessages2.get(2));
 
     }
 

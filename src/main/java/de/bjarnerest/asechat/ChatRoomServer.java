@@ -1,6 +1,8 @@
 package de.bjarnerest.asechat;
 
+import com.google.gson.stream.MalformedJsonException;
 import de.bjarnerest.asechat.model.Message;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,6 +13,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 public class ChatRoomServer {
 
@@ -20,6 +24,7 @@ public class ChatRoomServer {
     protected ServerSocket serverSocket;
     private int testModeMaxClients = -1;
     private boolean running;
+    private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     public ChatRoomServer(InetAddress host, int port) {
         this.host = host;
@@ -28,6 +33,7 @@ public class ChatRoomServer {
     }
 
     void setTestModeMaxClients(int testModeMaxClients) {
+        logger.info("Enabling test mode. Refusing connections with more than " + testModeMaxClients + " clients");
         this.testModeMaxClients = testModeMaxClients;
     }
 
@@ -41,7 +47,9 @@ public class ChatRoomServer {
         this.running = true;
         this.createSocket();
         while (running && (this.testModeMaxClients == -1 || this.testModeMaxClients > this.userHandlers.size())) {
+            logger.fine("Waiting for new client to connect.");
             ChatRoomUserHandler userHandler = new ChatRoomUserHandler(serverSocket.accept());
+            logger.info("New client socket connected. Starting user handler thread.");
             userHandler.start();
             this.userHandlers.add(userHandler);
         }
@@ -49,6 +57,8 @@ public class ChatRoomServer {
     }
 
     public void publishMessage(Message message, UUID publisher) {
+        logger.info("Publishing message: " + message.toJson());
+        logger.fine("Message sent by " + publisher);
         for (ChatRoomUserHandler userHandler : userHandlers) {
             if (userHandler.getClientId().equals(publisher)) continue;
             userHandler.publishMessage(message);
@@ -65,6 +75,7 @@ public class ChatRoomServer {
         public ChatRoomUserHandler(Socket clientSocket) {
             this.clientSocket = clientSocket;
             this.clientId = UUID.randomUUID();
+            logger.fine("Assigned clientId " + this.clientId);
         }
 
         @Override
@@ -77,11 +88,12 @@ public class ChatRoomServer {
 
                 this.out = out;
 
-                out.println("system:ready");
+                logger.fine("Greeting new client with system:ready");
+                this.println("system:ready");
 
                 String inLine;
                 while (!left && ChatRoomServer.this.running && (inLine = in.readLine()) != null) {
-
+                    logger.finest("Received line: " + inLine);
                     handleMessage(inLine);
 
                 }
@@ -89,6 +101,7 @@ public class ChatRoomServer {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
+                logger.info("Removing user handler for client " + this.clientId);
                 ChatRoomServer.this.userHandlers.remove(this);
                 try {
                     this.clientSocket.close();
@@ -99,26 +112,43 @@ public class ChatRoomServer {
 
         }
 
-        private void handleMessage(String line) {
+        private void handleMessage(@NotNull String line) {
 
             if (line.startsWith("chat:message:send=")) {
                 // Client wants so send message
                 // Try to form message object
-                Message message = Message.fromJson(line.split("chat:message:send=", 2)[1]);
-                ChatRoomServer.this.publishMessage(message, this.clientId);
+                logger.fine("Received message from client " + this.clientId);
+                logger.finest("Trying to deserialize message json");
+
+                try {
+                    Message message = Message.fromJson(line.split("chat:message:send=", 2)[1]);
+                    logger.fine("Message content: " + message.toJson());
+                    ChatRoomServer.this.publishMessage(message, this.clientId);
+                } catch (MalformedJsonException e) {
+                    logger.severe(e.toString());
+                    this.println("system:error:parsing");
+                }
 
             } else if (line.equals("chat:leave")) {
+                logger.info("User left chatroom: " + this.clientId);
                 this.left = true;
             } else {
-                this.out.println("system:error");
+                logger.warning("Client (" + this.clientId + ") command cannot be interpreted: " + line);
+                this.println("system:error:no_such_command");
             }
 
         }
 
-        public void publishMessage(Message message) {
-            this.out.println("chat:message:publish=" + message.toJson());
+        private synchronized void println(String line) {
+            this.out.println(line);
         }
 
+        public void publishMessage(@NotNull Message message) {
+            logger.fine("Publishing message: " + message.toJson());
+            this.println("chat:message:publish=" + message.toJson());
+        }
+
+        @NotNull
         public UUID getClientId() {
             return clientId;
         }

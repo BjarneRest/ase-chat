@@ -1,6 +1,7 @@
 package de.bjarnerest.asechat.model;
 
 import com.google.gson.Gson;
+import com.google.gson.stream.MalformedJsonException;
 
 import java.util.Objects;
 
@@ -14,7 +15,7 @@ public class Message {
         this.messageSenderName = messageSenderName;
     }
 
-    public static Message fromJson(String json) {
+    public static Message fromJson(String json) throws MalformedJsonException {
         return new Gson().fromJson(json, Message.class);
     }
 
