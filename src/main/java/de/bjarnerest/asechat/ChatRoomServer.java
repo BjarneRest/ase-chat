@@ -13,6 +13,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
@@ -20,6 +22,7 @@ public class ChatRoomServer {
 
     final private InetAddress host;
     final private int port;
+    final private String password;
     final private ArrayList<ChatRoomUserHandler> userHandlers;
     protected ServerSocket serverSocket;
     private int testModeMaxClients = -1;
@@ -27,8 +30,13 @@ public class ChatRoomServer {
     private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     public ChatRoomServer(InetAddress host, int port) {
+        this(host, port, "");
+    }
+
+    public ChatRoomServer(InetAddress host, int port, String password) {
         this.host = host;
         this.port = port;
+        this.password = password;
         this.userHandlers = new ArrayList<>();
     }
 
@@ -59,10 +67,10 @@ public class ChatRoomServer {
     public void publishMessage(Message message, UUID publisher) {
         logger.info("Publishing message: " + message.toJson());
         logger.fine("Message sent by " + publisher);
-        for (ChatRoomUserHandler userHandler : userHandlers) {
-            if (userHandler.getClientId().equals(publisher)) continue;
-            userHandler.publishMessage(message);
-        }
+        this.userHandlers.stream()
+                .filter(userHandler -> userHandler.authenticated)
+                .filter(userHandler -> !userHandler.getClientId().equals(publisher))
+                .forEach(userHandler -> userHandler.publishMessage(message));
     }
 
     private class ChatRoomUserHandler extends Thread {
@@ -70,6 +78,7 @@ public class ChatRoomServer {
         private final UUID clientId;
         private final Socket clientSocket;
         private boolean left;
+        private boolean authenticated = false;
         private PrintWriter out;
 
         public ChatRoomUserHandler(Socket clientSocket) {
@@ -87,11 +96,14 @@ public class ChatRoomServer {
             ) {
 
                 this.out = out;
-
-                logger.fine("Greeting new client with system:ready");
-                this.println("system:ready");
-
                 String inLine;
+                if(ChatRoomServer.this.password.isEmpty()) {
+                   this.authenticate();
+                } else {
+                    this.println("system:authenticate");
+                }
+
+
                 while (!left && ChatRoomServer.this.running && (inLine = in.readLine()) != null) {
                     logger.finest("Received line: " + inLine);
                     handleMessage(inLine);
@@ -112,7 +124,34 @@ public class ChatRoomServer {
 
         }
 
+        private void authenticate() {
+            this.authenticated = true;
+            logger.fine("Greeting new client with system:ready");
+            this.println("system:ready");
+        }
+
         private void handleMessage(@NotNull String line) {
+
+            if(!authenticated) {
+
+                if(line.startsWith("system:authenticate=")) {
+
+                    logger.fine("Client tries to authenticate.");
+                    String passwordReceived = line.split("system:authenticate=", 2)[1];
+                    if(ChatRoomServer.this.password.equals(passwordReceived)) {
+                        logger.fine("Password matched.");
+                        this.authenticate();
+                        return;
+                    } else {
+                        logger.fine("Password wrong.");
+                    }
+
+                }
+
+                this.println("system:authenticate");
+
+                return;
+            }
 
             if (line.startsWith("chat:message:send=")) {
                 // Client wants so send message

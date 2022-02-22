@@ -29,7 +29,7 @@ public class ServerCommand implements Runnable {
 
         try {
             InetAddress addr = InetAddress.getByName(this.hostIp);
-            ChatRoomServer chatRoomServer = new ChatRoomServer(addr, this.port);
+            ChatRoomServer chatRoomServer = new ChatRoomServer(addr, this.port, this.password);
             logger.info("Starting server.");
             chatRoomServer.startServer();
         } catch (IOException e) {
