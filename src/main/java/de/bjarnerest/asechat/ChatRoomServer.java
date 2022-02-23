@@ -13,9 +13,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class ChatRoomServer {
@@ -24,10 +21,10 @@ public class ChatRoomServer {
     final private int port;
     final private String password;
     final private ArrayList<ChatRoomUserHandler> userHandlers;
+    private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     protected ServerSocket serverSocket;
     private int testModeMaxClients = -1;
     private boolean running;
-    private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     public ChatRoomServer(InetAddress host, int port) {
         this(host, port, "");
@@ -97,8 +94,8 @@ public class ChatRoomServer {
 
                 this.out = out;
                 String inLine;
-                if(ChatRoomServer.this.password.isEmpty()) {
-                   this.authenticate();
+                if (ChatRoomServer.this.password.isEmpty()) {
+                    this.authenticate();
                 } else {
                     this.println("system:authenticate");
                 }
@@ -132,13 +129,13 @@ public class ChatRoomServer {
 
         private void handleMessage(@NotNull String line) {
 
-            if(!authenticated) {
+            if (!authenticated) {
 
-                if(line.startsWith("system:authenticate=")) {
+                if (line.startsWith("system:authenticate=")) {
 
                     logger.fine("Client tries to authenticate.");
                     String passwordReceived = line.split("system:authenticate=", 2)[1];
-                    if(ChatRoomServer.this.password.equals(passwordReceived)) {
+                    if (ChatRoomServer.this.password.equals(passwordReceived)) {
                         logger.fine("Password matched.");
                         this.authenticate();
                         return;

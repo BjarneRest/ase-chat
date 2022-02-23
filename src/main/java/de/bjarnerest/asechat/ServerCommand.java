@@ -5,22 +5,18 @@ import picocli.CommandLine.Option;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Command(name = "Server", version = "1.0", mixinStandardHelpOptions = true)
 public class ServerCommand implements Runnable {
 
+    private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     @Option(names = {"-p", "--port"}, description = "Port number")
     int port = 25531;
-
     @Option(names = {"-h", "--host"}, description = "Host IP-Address")
     String hostIp = "0.0.0.0";
-
     @Option(names = {"-k", "--key", "--password"}, description = "Room password")
     String password = "";
-
-    private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     @Override
     public void run() {
