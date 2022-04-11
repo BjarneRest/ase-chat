@@ -12,11 +12,13 @@ Starting the server component:
 
 Arguments:
 
-| Argument 	| Description                 	|
-|----------	|-----------------------------	|
-| `--host`   	| Host (default 0.0.0.0)      	|
-| `-h`       	| Alias of `--host`             	|
-| `--port`   	| Server port (default 25531) 	|
-| `-p`       	| Alias of `--port`             	|
-| `--key`    	| Room password (optional)    	|
-| `-k`       	| Alias of `--key`              	|
+| Argument 	        | Description                 	        |
+|-------------------|--------------------------------------|
+| `--host`   	      | Host (default 0.0.0.0)      	        |
+| `-h`       	      | Alias of `--host`             	      |
+| `--port`   	      | Server port (default 25531) 	        |
+| `-p`       	      | Alias of `--port`             	      |
+| `--key`    	      | Room password (optional)    	        |
+| `-k`       	      | Alias of `--key`              	      |
+| `--username`    	 | Name of User    	                    |
+| `-u`       	      | Alias of `--username`              	 |
