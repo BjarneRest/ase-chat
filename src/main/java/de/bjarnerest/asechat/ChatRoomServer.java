@@ -37,7 +37,7 @@ public class ChatRoomServer {
         this.userHandlers = new ArrayList<>();
     }
 
-    void setTestModeMaxClients(int testModeMaxClients) {
+    void setTestModeMaxClients(@SuppressWarnings("SameParameterValue") int testModeMaxClients) {
         logger.info("Enabling test mode. Refusing connections with more than " + testModeMaxClients + " clients");
         this.testModeMaxClients = testModeMaxClients;
     }
@@ -160,6 +160,7 @@ public class ChatRoomServer {
                     Message message = Message.fromJson(line.split("chat:message:send=", 2)[1]);
                     logger.fine("Message content: " + message.toJson());
                     ChatRoomServer.this.publishMessage(message, this.clientId);
+                    this.println("chat:message:echo=" + message.toJson());
                 } catch (MalformedJsonException e) {
                     logger.severe(e.toString());
                     this.println("system:error:parsing");

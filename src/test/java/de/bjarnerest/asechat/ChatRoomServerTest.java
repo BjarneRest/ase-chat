@@ -1,6 +1,7 @@
 package de.bjarnerest.asechat;
 
 import de.bjarnerest.asechat.model.Message;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -9,11 +10,15 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ChatRoomServerTest {
 
@@ -25,13 +30,29 @@ class ChatRoomServerTest {
         Mockito.reset(this.serverSocket);
     }
 
-    void prepareSubject(InetAddress host, int port) {
-        this.subject = new ChatRoomServer(host, port) {
+    void prepareSubject(InetAddress host, @SuppressWarnings("SameParameterValue") int port) {
+        prepareSubject(host, port, "");
+    }
+
+    void prepareSubject(InetAddress host, int port, String password) {
+        this.subject = new ChatRoomServer(host, port, password) {
             @Override
-            protected void createSocket() throws IOException {
+            protected void createSocket() {
                 this.serverSocket = ChatRoomServerTest.this.serverSocket;
             }
         };
+    }
+
+    private @NotNull Thread startServer() {
+        Thread serverThread = new Thread(() -> {
+            try {
+                this.subject.startServer();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        serverThread.start();
+        return serverThread;
     }
 
     @Test
@@ -43,14 +64,7 @@ class ChatRoomServerTest {
         final MockSocket mockSocket2 = new MockSocket();
         Mockito.when(this.serverSocket.accept()).thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
         this.subject.setTestModeMaxClients(2);
-        Thread serverThread = new Thread(() -> {
-            try {
-                this.subject.startServer();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        serverThread.start();
+        Thread serverThread = this.startServer();
 
 
         // Send message from client 1
@@ -62,21 +76,86 @@ class ChatRoomServerTest {
         mockSocket2.writeLine("chat:message:send=" + message2.toJson());
 
         // Send corrupted message from client 2
-        mockSocket2.writeLine("chat:message:send={\"mess");
+        //mockSocket2.writeLine("chat:message:send={\"mess");
 
         // Receive message 1+2
         // Collect server messages
-        List<String> receivedMessages1 = mockSocket1.getBufferedOutputOfOutputStream().lines().limit(2).collect(Collectors.toList());
-        List<String> receivedMessages2 = mockSocket2.getBufferedOutputOfOutputStream().lines().limit(3).collect(Collectors.toList());
+        List<String> receivedMessages1 = mockSocket1.getBufferedOutputOfOutputStream().lines().limit(3).collect(Collectors.toList());
+        List<String> receivedMessages2 = mockSocket2.getBufferedOutputOfOutputStream().lines().limit(4).collect(Collectors.toList());
 
 
         assertEquals("system:ready", receivedMessages1.get(0));
         assertEquals("system:ready", receivedMessages2.get(0));
 
-        assertEquals("chat:message:publish=" + message1.toJson(), receivedMessages2.get(1));
-        assertEquals("chat:message:publish=" + message2.toJson(), receivedMessages1.get(1));
+        assertEquals("chat:message:echo=" + message1.toJson(), receivedMessages2.get(1));
+        assertEquals("chat:message:publish=" + message1.toJson(), receivedMessages2.get(2));
+        assertEquals("chat:message:publish=" + message2.toJson(), receivedMessages1.get(2));
 
-        assertEquals("system:error:parsing", receivedMessages2.get(2));
+        //assertEquals("system:error:parsing", receivedMessages2.get(2));
+
+        serverThread.interrupt();
+
+    }
+    
+    @Test
+    void serverPasswordProtectionTest() throws IOException {
+        this.prepareSubject(InetAddress.getByName("1.2.3.4"), 12345, "securePasswordTest");
+
+        MockSocket mockSocket1 = new MockSocket();
+        MockSocket mockSocket2 = new MockSocket();
+
+        Mockito.when(this.serverSocket.accept()).thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
+        this.subject.setTestModeMaxClients(2);
+        Thread serverThread = this.startServer();
+
+        ArrayList<String> checkAnswers1 = new ArrayList<>();
+        ArrayList<String> checkAnswers2 = new ArrayList<>();
+
+        // Should ask for authentication at begin
+        checkAnswers1.add("system:authenticate");
+        checkAnswers2.add("system:authenticate");
+
+        // Try to authenticate without password
+        mockSocket1.writeLine("system:authenticate");
+        checkAnswers1.add("system:authenticate");
+        mockSocket1.writeLine("system:authenticate=");
+        checkAnswers1.add("system:authenticate");
+
+        // Try to authenticate client 2 with correct password
+        mockSocket2.writeLine("system:authenticate=securePasswordTest");
+        checkAnswers2.add("system:ready");
+
+        // Publish message
+        Message dummyMsg1 = new Message("hw", "doe");
+        mockSocket2.writeLine("chat:message:send=" + dummyMsg1.toJson());
+        checkAnswers2.add("chat:message:echo=" + dummyMsg1.toJson());
+
+        // Login client 1
+        mockSocket1.writeLine("system:authenticate=securePasswordTest");
+        checkAnswers1.add("system:ready");
+
+        // Publish message
+        Message dummyMsg2 = new Message("I like cats.", "cat_lover_9000");
+        mockSocket1.writeLine("chat:message:send=" + dummyMsg2.toJson());
+        checkAnswers2.add("chat:message:echo=" + dummyMsg2.toJson());
+        checkAnswers1.add("chat:message:publish=" + dummyMsg2.toJson());
+
+        // Check answers
+
+        for (String answerToCheck : checkAnswers1) {
+            assertTrue(mockSocket1.getBufferedOutputOfOutputStream().ready());
+            assertEquals(answerToCheck, mockSocket1.getBufferedOutputOfOutputStream().readLine());
+        }
+        assertFalse(mockSocket1.getBufferedOutputOfOutputStream().ready());
+
+        for (String answerToCheck : checkAnswers2) {
+            assertTrue(mockSocket2.getBufferedOutputOfOutputStream().ready());
+            assertEquals(answerToCheck, mockSocket2.getBufferedOutputOfOutputStream().readLine());
+        }
+        assertFalse(mockSocket2.getBufferedOutputOfOutputStream().ready());
+
+
+        serverThread.interrupt();
 
     }
 

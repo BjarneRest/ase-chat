@@ -1,5 +1,6 @@
 package de.bjarnerest.asechat;
 
+import de.bjarnerest.asechat.helper.ConfigHelper;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -12,11 +13,11 @@ public class ServerCommand implements Runnable {
 
     private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     @Option(names = {"-p", "--port"}, description = "Port number")
-    int port = 25531;
+    int port = ConfigHelper.getInstance().getConfig().getInt("server.port");
     @Option(names = {"-h", "--host"}, description = "Host IP-Address")
-    String hostIp = "0.0.0.0";
+    String hostIp = ConfigHelper.getInstance().getConfig().getString("server.host");
     @Option(names = {"-k", "--key", "--password"}, description = "Room password")
-    String password = "";
+    String password = ConfigHelper.getInstance().getConfig().getString("server.password");
 
     @Override
     public void run() {
