@@ -92,7 +92,7 @@ public class ConfigHelper {
     newConfig.addProperty("server.host", "0.0.0.0");
     newConfig.addProperty("server.password", "");
     newConfig.addProperty("client.port", 25531);
-    newConfig.addProperty("client.host", "0.0.0.0");
+    newConfig.addProperty("client.host", "127.0.0.1");
     newConfig.addProperty("client.password", "");
     newConfig.addProperty("client.username", "Bob");
 
