@@ -3,13 +3,19 @@ package de.bjarnerest.asechat;
 import de.bjarnerest.asechat.helper.ConfigHelper;
 import java.net.URL;
 import org.apache.commons.configuration2.Configuration;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigHelperTest {
 
-  private final ConfigHelper subject = ConfigHelper.getInstance();
+  private ConfigHelper subject;
+
+  @BeforeEach
+  void setUp() {
+    subject = ConfigHelper.forceNewInstance();
+  }
 
   @Test
   void testDefaultConfig() {

@@ -106,4 +106,9 @@ public class ConfigHelper {
     return config;
   }
 
+  public static ConfigHelper forceNewInstance() {
+    instance = new ConfigHelper();
+    return instance;
+  }
+
 }
