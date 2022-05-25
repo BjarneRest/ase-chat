@@ -1,8 +1,5 @@
 package de.bjarnerest.asechat.helper;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import org.jetbrains.annotations.NotNull;
 
