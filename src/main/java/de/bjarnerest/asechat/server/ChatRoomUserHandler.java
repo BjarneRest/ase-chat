@@ -1,4 +1,4 @@
-package de.bjarnerest.asechat;
+package de.bjarnerest.asechat.server;
 
 import com.google.gson.stream.MalformedJsonException;
 import de.bjarnerest.asechat.model.Message;
@@ -17,8 +17,8 @@ class ChatRoomUserHandler extends Thread {
   private final ChatRoomServer chatRoomServer;
   private final UUID clientId;
   private final Socket clientSocket;
-  private boolean left;
   boolean authenticated = false;
+  private boolean left;
   private PrintWriter out;
 
   public ChatRoomUserHandler(ChatRoomServer chatRoomServer, Socket clientSocket) {

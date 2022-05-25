@@ -1,4 +1,4 @@
-package de.bjarnerest.asechat;
+package de.bjarnerest.asechat.command;
 
 import de.bjarnerest.asechat.helper.ConfigHelper;
 import picocli.CommandLine.Command;
