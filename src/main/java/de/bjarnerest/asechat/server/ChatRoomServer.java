@@ -70,7 +70,7 @@ public class ChatRoomServer {
   }
 
   public boolean isProtected() {
-    return this.password.isEmpty();
+    return !this.password.isEmpty();
   }
 
   public boolean checkPassword(String passwordToCheck) {
