@@ -7,17 +7,10 @@ import de.bjarnerest.asechat.model.Station;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public class ChatMessageSendInstruction extends BaseInstruction {
+public class ChatMessageEchoInstruction extends ChatMessageSendInstruction {
 
-  protected final @NotNull Message message;
-
-  public ChatMessageSendInstruction(Station origin, @NotNull Message message) {
-    super(origin);
-    this.message = message;
-  }
-
-  public @NotNull Message getMessage() {
-    return message;
+  public ChatMessageEchoInstruction(Station origin, @NotNull Message message) {
+    super(origin, message);
   }
 
   @Override
@@ -28,17 +21,17 @@ public class ChatMessageSendInstruction extends BaseInstruction {
   }
 
   @Contract("_, _ -> new")
-  public static @NotNull ChatMessageSendInstruction fromString(String stringRepresentation, Station origin) throws InstructionInvalidException {
+  public static @NotNull ChatMessageEchoInstruction fromString(String stringRepresentation, Station origin) throws InstructionInvalidException {
 
     String[] split = splitInstruction(stringRepresentation);
-    if(!split[0].equals(InstructionNameHelper.getNameForInstruction(ChatMessageSendInstruction.class))) {
+    if(!split[0].equals(InstructionNameHelper.getNameForInstruction(ChatMessageEchoInstruction.class))) {
       throw new InstructionInvalidException();
     }
 
     // Try to parse payload
     try {
       Message newMessage = Message.fromJson(split[1]);
-      return new ChatMessageSendInstruction(origin, newMessage);
+      return new ChatMessageEchoInstruction(origin, newMessage);
     } catch (MalformedJsonException e) {
       throw new InstructionInvalidException();
     }

@@ -28,6 +28,10 @@ public class SystemAuthenticateInstruction extends BaseInstruction {
     return stringRepresentation;
   }
 
+  public String getPassword() {
+    return password;
+  }
+
   @Contract("_, _ -> new")
   public static @NotNull SystemAuthenticateInstruction fromString(String stringRepresentation, Station origin) throws InstructionInvalidException {
 
@@ -37,7 +41,7 @@ public class SystemAuthenticateInstruction extends BaseInstruction {
     }
 
     // Try to parse payload
-    String password = split[1];
+    String password = split.length == 2 ? split[1] : "";
 
     return new SystemAuthenticateInstruction(origin, password);
 
