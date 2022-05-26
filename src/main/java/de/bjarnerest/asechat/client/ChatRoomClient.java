@@ -6,7 +6,7 @@ import de.bjarnerest.asechat.model.User;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
+import java.nio.charset.StandardCharsets;
 
 public class ChatRoomClient {
 
@@ -14,8 +14,9 @@ public class ChatRoomClient {
     final private int port;
     final private String password;
     final private User user;
+    private Socket socket;
     private boolean authenticated = false;
-    BufferedWriter clientDataBuffered;
+    OutputStream clientDataOs;
     BufferedReader serverDataBuffered;
 
     public ChatRoomClient(InetAddress host, int port,  String password, String username) {
@@ -27,27 +28,26 @@ public class ChatRoomClient {
 
     public void connectToServer() throws Exception {
 
-        Socket socket = new Socket(host, port);
+        socket = new Socket(host, port);
         InputStream serverData = socket.getInputStream();
-        OutputStream clientData = socket.getOutputStream();
-        clientDataBuffered = new BufferedWriter(new PrintWriter(clientData));
+        clientDataOs = socket.getOutputStream();
         serverDataBuffered = new BufferedReader(new InputStreamReader(serverData));
-        this.recieveMessage();
+        this.receiveMessage();
 
     }
 
     public void sendMessage() throws Exception{
-        clientDataBuffered.write("Hello");
+        this.sendLine("Hello");
     }
 
-    public void recieveMessage() throws Exception {
+    public void receiveMessage() throws Exception {
         String line;
         while((line = serverDataBuffered.readLine()) != null) {
             System.out.println(line);
             if(line.equals("system:ready")) {
                 authenticated = true;
                 Message message = new Message("Hello Welt. Hier ist " + user.getUsername() + "\n", user);
-                clientDataBuffered.write("chat:message:send=" + message.toJson() + "\n");
+                this.sendLine("chat:message:send=" + message.toJson());
                 System.out.println("Habs geschickt");
             }
             if (line.equals("system:authenticate")) {
@@ -57,7 +57,13 @@ public class ChatRoomClient {
     }
 
     public void authenticate() throws Exception {
-        clientDataBuffered.write("system:authenticate=" + password + "\r\n");
+        this.sendLine("system:authenticate=" + password);
+    }
+
+    private void sendLine(String line) throws Exception {
+        System.out.println("send line = " + line);
+        this.clientDataOs.write(line.getBytes(StandardCharsets.UTF_8));
+        this.clientDataOs.write("\n".getBytes(StandardCharsets.UTF_8));
     }
 
 }
