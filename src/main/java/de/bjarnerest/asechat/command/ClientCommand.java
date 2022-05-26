@@ -29,10 +29,6 @@ public class ClientCommand implements Runnable {
   @Override
   public void run() {
 
-    logger.finest("Username: " + username);
-    logger.finest("hostIp: " + hostIp);
-    logger.finest("port: " + port);
-
     try {
       ChatRoomClient client = new ChatRoomClient(InetAddress.getByName(hostIp), port, password, username);
       client.connectToServer();

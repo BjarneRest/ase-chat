@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 
 public class ChatRoomClient {
 
@@ -46,12 +47,17 @@ public class ChatRoomClient {
             System.out.println(line);
             if(line.equals("system:ready")) {
                 authenticated = true;
-                Message message = new Message("Hello Welt. Hier ist " + user.getUsername() + "\n", user);
+                Message message = new Message("Hello Welt. Hier ist " + user.getUsername(), user);
                 this.sendLine("chat:message:send=" + message.toJson());
-                System.out.println("Habs geschickt");
+                handleUserInput();
             }
             if (line.equals("system:authenticate")) {
                 this.authenticate();
+            }
+            if (line.startsWith("chat:message:send")) {
+                String messageJson = line.split("=")[1];
+                Message message = Message.fromJson(messageJson);
+                System.out.printf("%s: %s\n", message.getMessageSender().getUsername(), message.getMessageText());
             }
         }
     }
@@ -64,6 +70,29 @@ public class ChatRoomClient {
         System.out.println("send line = " + line);
         this.clientDataOs.write(line.getBytes(StandardCharsets.UTF_8));
         this.clientDataOs.write("\n".getBytes(StandardCharsets.UTF_8));
+    }
+
+    public void handleUserInput () {
+        Thread userThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String line;
+                Scanner scanner = new Scanner(System.in);
+                scanner.nextLine();
+                while ((line = scanner.nextLine()) != null) {
+                    Message message = new Message(line, user);
+
+                    try {
+                        sendLine("chat:message:send=" + message.toJson());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        userThread.start();
+
     }
 
 }
