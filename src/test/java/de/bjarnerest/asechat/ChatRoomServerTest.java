@@ -81,13 +81,13 @@ class ChatRoomServerTest {
         mockSocket1.awaitReady();
         assertEquals("chat:message:echo=" + message1.toJson(), mockSocket1.readLine());
         mockSocket2.awaitReady();
-        assertEquals("chat:message:publish=" + message1.toJson(), mockSocket2.readLine());
+        assertEquals("chat:message:send=" + message1.toJson(), mockSocket2.readLine());
 
         // Send message from client 2
         Message message2 = new Message("Greetings!", fakeUser2);
         mockSocket2.writeLine("chat:message:send=" + message2.toJson());
         mockSocket1.awaitReady();
-        assertEquals("chat:message:publish=" + message2.toJson(), mockSocket1.readLine());
+        assertEquals("chat:message:send=" + message2.toJson(), mockSocket1.readLine());
         mockSocket2.awaitReady();
         assertEquals("chat:message:echo=" + message2.toJson(), mockSocket2.readLine());
 
@@ -154,7 +154,7 @@ class ChatRoomServerTest {
         assertEquals("chat:message:echo=" + dummyMsg2.toJson(), mockSocket2.readLine());
 
         mockSocket1.awaitReady();
-        assertEquals("chat:message:publish=" + dummyMsg2.toJson(), mockSocket1.readLine());
+        assertEquals("chat:message:send=" + dummyMsg2.toJson(), mockSocket1.readLine());
 
         // Check for remains
         assertFalse(mockSocket1.getBufferedOutputOfOutputStream().ready());
