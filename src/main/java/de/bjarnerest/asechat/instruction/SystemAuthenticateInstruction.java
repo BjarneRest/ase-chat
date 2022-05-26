@@ -28,6 +28,10 @@ public class SystemAuthenticateInstruction extends BaseInstruction {
     return stringRepresentation;
   }
 
+  public String getPassword() {
+    return password;
+  }
+
   @Contract("_, _ -> new")
   public static @NotNull SystemAuthenticateInstruction fromString(String stringRepresentation, Station origin) throws InstructionInvalidException {
 

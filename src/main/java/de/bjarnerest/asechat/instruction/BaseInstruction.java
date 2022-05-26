@@ -1,6 +1,5 @@
 package de.bjarnerest.asechat.instruction;
 
-import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.model.Station;
 
 public abstract class BaseInstruction {
@@ -13,8 +12,8 @@ public abstract class BaseInstruction {
 
   public abstract String toString();
 
-  protected static String[] splitInstruction(String stringRepresentation) {
-    return stringRepresentation.split("=", 1);
+  public static String[] splitInstruction(String stringRepresentation) {
+    return stringRepresentation.split("=", 2);
   }
 
 }
