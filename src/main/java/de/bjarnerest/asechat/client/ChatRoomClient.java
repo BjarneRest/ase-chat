@@ -29,12 +29,16 @@ public class ChatRoomClient {
 
     public void connectToServer() throws Exception {
 
-        socket = new Socket(host, port);
+        socket = createSocket();
         InputStream serverData = socket.getInputStream();
         clientDataOs = socket.getOutputStream();
         serverDataBuffered = new BufferedReader(new InputStreamReader(serverData));
         this.receiveMessage();
 
+    }
+
+    protected Socket createSocket() throws Exception{
+        return new Socket(host, port);
     }
 
     public void sendMessage() throws Exception{
