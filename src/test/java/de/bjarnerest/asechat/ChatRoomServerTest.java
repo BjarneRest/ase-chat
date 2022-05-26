@@ -1,5 +1,6 @@
 package de.bjarnerest.asechat;
 
+import de.bjarnerest.asechat.helper.HashingHelper;
 import de.bjarnerest.asechat.model.Message;
 import de.bjarnerest.asechat.model.User;
 import de.bjarnerest.asechat.server.ChatRoomServer;
@@ -100,12 +101,14 @@ class ChatRoomServerTest {
 
     @Test
     void serverPasswordProtectionTest() throws IOException {
-        this.prepareSubject(InetAddress.getByName("1.2.3.4"), 12345, "securePasswordTest");
+
+        String hashedPassword = HashingHelper.hashSha512WithSalt("securePasswordTest");
+        this.prepareSubject(InetAddress.getByName("1.2.3.4"), 12345, hashedPassword);
 
         MockSocket mockSocket1 = new MockSocket();
         MockSocket mockSocket2 = new MockSocket();
         final User fakeUser1 = new User("Max");
-        final User fakeUser2 = new User("Catlove_9000");
+        final User fakeUser2 = new User("catlover_9000");
 
         Mockito.when(this.serverSocket.accept()).thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
         this.subject.setTestModeMaxClients(2);

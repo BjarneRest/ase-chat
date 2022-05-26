@@ -1,6 +1,7 @@
 package de.bjarnerest.asechat.command;
 
 import de.bjarnerest.asechat.helper.ConfigHelper;
+import de.bjarnerest.asechat.helper.HashingHelper;
 import de.bjarnerest.asechat.server.ChatRoomServer;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -27,7 +28,8 @@ public class ServerCommand implements Runnable {
 
     try {
       InetAddress addr = InetAddress.getByName(this.hostIp);
-      ChatRoomServer chatRoomServer = new ChatRoomServer(addr, this.port, this.password);
+      String hashedPassword = this.password.isEmpty() ? "" : HashingHelper.hashSha512WithSalt(this.password);
+      ChatRoomServer chatRoomServer = new ChatRoomServer(addr, this.port, hashedPassword);
       logger.info("Starting server.");
       chatRoomServer.startServer();
     } catch (IOException e) {

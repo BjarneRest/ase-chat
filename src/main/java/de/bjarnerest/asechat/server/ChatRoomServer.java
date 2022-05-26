@@ -1,5 +1,6 @@
 package de.bjarnerest.asechat.server;
 
+import de.bjarnerest.asechat.helper.HashingHelper;
 import de.bjarnerest.asechat.model.Message;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -12,7 +13,7 @@ public class ChatRoomServer {
 
   final private InetAddress host;
   final private int port;
-  final private String password;
+  final private String passwordHash;
   final private ArrayList<ChatRoomUserHandler> userHandlers;
   private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
   protected ServerSocket serverSocket;
@@ -23,10 +24,10 @@ public class ChatRoomServer {
     this(host, port, "");
   }
 
-  public ChatRoomServer(InetAddress host, int port, String password) {
+  public ChatRoomServer(InetAddress host, int port, String passwordHash) {
     this.host = host;
     this.port = port;
-    this.password = password;
+    this.passwordHash = passwordHash;
     this.userHandlers = new ArrayList<>();
   }
 
@@ -70,11 +71,11 @@ public class ChatRoomServer {
   }
 
   public boolean isProtected() {
-    return !this.password.isEmpty();
+    return !this.passwordHash.isEmpty();
   }
 
   public boolean checkPassword(String passwordToCheck) {
-    return passwordToCheck.equals(this.password);
+    return HashingHelper.verifySha512WithSalt(passwordToCheck, this.passwordHash);
   }
 
   public boolean isRunning() {
