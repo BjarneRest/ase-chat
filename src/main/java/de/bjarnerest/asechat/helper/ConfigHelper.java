@@ -94,7 +94,7 @@ public class ConfigHelper {
     newConfig.addProperty("client.port", 25531);
     newConfig.addProperty("client.host", "127.0.0.1");
     newConfig.addProperty("client.password", "");
-    newConfig.addProperty("client.username", "Bob");
+    newConfig.addProperty("client.username", UserNameHelper.generateUsername());
 
     builder.save();
 

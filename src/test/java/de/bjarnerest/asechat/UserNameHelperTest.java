@@ -23,4 +23,18 @@ public class UserNameHelperTest {
 
   }
 
+  @Test
+  void testUserNameNotEmpty() {
+
+    assertFalse(UserNameHelper.generateUsername().isEmpty());
+
+  }
+
+  @Test
+  void testUserNameBeginning() {
+
+    assertTrue(UserNameHelper.generateUsername().startsWith("User_"));
+
+  }
+
 }

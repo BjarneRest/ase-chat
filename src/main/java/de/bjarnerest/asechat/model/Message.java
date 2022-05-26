@@ -7,11 +7,11 @@ import java.util.Objects;
 public class Message {
 
   private String messageText;
-  private String messageSenderName;
+  private User messageSender;
 
-  public Message(String messageText, String messageSenderName) {
+  public Message(String messageText, User messageSender) {
     this.messageText = messageText;
-    this.messageSenderName = messageSenderName;
+    this.messageSender = messageSender;
   }
 
   public static Message fromJson(String json) throws MalformedJsonException {
@@ -26,12 +26,12 @@ public class Message {
     this.messageText = messageText;
   }
 
-  public String getMessageSenderName() {
-    return messageSenderName;
+  public User getMessageSender() {
+    return messageSender;
   }
 
-  public void setMessageSenderName(String messageSenderName) {
-    this.messageSenderName = messageSenderName;
+  public void setMessageSender(User messageSender) {
+    this.messageSender = messageSender;
   }
 
   @Override
@@ -43,19 +43,19 @@ public class Message {
           return false;
       }
     Message message = (Message) o;
-    return Objects.equals(messageText, message.messageText) && Objects.equals(messageSenderName, message.messageSenderName);
+    return Objects.equals(messageText, message.messageText) && Objects.equals(messageSender, message.messageSender);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(messageText, messageSenderName);
+    return Objects.hash(messageText, messageSender);
   }
 
   @Override
   public String toString() {
     return "Message{" +
         "messageText='" + messageText + '\'' +
-        ", messageSenderName='" + messageSenderName + '\'' +
+        ", messageSenderName='" + messageSender + '\'' +
         '}';
   }
 

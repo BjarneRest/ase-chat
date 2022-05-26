@@ -24,7 +24,7 @@ public class HashingHelper {
 
   }
 
-  public static boolean verifySha521WithSalt(@NotNull String subject, @NotNull String hashedRepresentation) {
+  public static boolean verifySha512WithSalt(@NotNull String subject, @NotNull String hashedRepresentation) {
 
       String[] splitString = hashedRepresentation.split(":");
       if(splitString.length != 2) {

@@ -1,6 +1,7 @@
 package de.bjarnerest.asechat;
 
 import de.bjarnerest.asechat.model.Message;
+import de.bjarnerest.asechat.model.User;
 import de.bjarnerest.asechat.server.ChatRoomServer;
 import java.time.Duration;
 import org.awaitility.Awaitility;
@@ -59,6 +60,8 @@ class ChatRoomServerTest {
         // Mock client socket
         final MockSocket mockSocket1 = new MockSocket();
         final MockSocket mockSocket2 = new MockSocket();
+        final User fakeUser1 = new User("Max");
+        final User fakeUser2 = new User("Moritz");
         Mockito.when(this.serverSocket.accept()).thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
         this.subject.setTestModeMaxClients(2);
         Thread serverThread = this.startServer();
@@ -72,7 +75,7 @@ class ChatRoomServerTest {
 
 
         // Send message from client 1
-        Message message1 = new Message("Hello World", "Max");
+        Message message1 = new Message("Hello World", fakeUser1);
         mockSocket1.writeLine("chat:message:send=" + message1.toJson());
         mockSocket1.awaitReady();
         assertEquals("chat:message:echo=" + message1.toJson(), mockSocket1.readLine());
@@ -80,7 +83,7 @@ class ChatRoomServerTest {
         assertEquals("chat:message:publish=" + message1.toJson(), mockSocket2.readLine());
 
         // Send message from client 2
-        Message message2 = new Message("Greetings!", "Moritz");
+        Message message2 = new Message("Greetings!", fakeUser2);
         mockSocket2.writeLine("chat:message:send=" + message2.toJson());
         mockSocket1.awaitReady();
         assertEquals("chat:message:publish=" + message2.toJson(), mockSocket1.readLine());
@@ -101,6 +104,8 @@ class ChatRoomServerTest {
 
         MockSocket mockSocket1 = new MockSocket();
         MockSocket mockSocket2 = new MockSocket();
+        final User fakeUser1 = new User("Max");
+        final User fakeUser2 = new User("Catlove_9000");
 
         Mockito.when(this.serverSocket.accept()).thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
         this.subject.setTestModeMaxClients(2);
@@ -128,7 +133,7 @@ class ChatRoomServerTest {
         assertEquals("system:ready", mockSocket2.readLine());
 
         // Publish message
-        Message dummyMsg1 = new Message("hw", "doe");
+        Message dummyMsg1 = new Message("hw", fakeUser1);
         mockSocket2.writeLine("chat:message:send=" + dummyMsg1.toJson());
         mockSocket2.awaitReady();
         assertEquals("chat:message:echo=" + dummyMsg1.toJson(), mockSocket2.readLine());
@@ -139,7 +144,7 @@ class ChatRoomServerTest {
         assertEquals("system:ready", mockSocket1.readLine());
 
         // Publish message
-        Message dummyMsg2 = new Message("I like cats.", "cat_lover_9000");
+        Message dummyMsg2 = new Message("I like cats.", fakeUser2);
         mockSocket2.writeLine("chat:message:send=" + dummyMsg2.toJson());
 
         mockSocket2.awaitReady();
