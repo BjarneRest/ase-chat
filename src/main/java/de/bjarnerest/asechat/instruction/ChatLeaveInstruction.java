@@ -19,9 +19,9 @@ public class ChatLeaveInstruction extends BaseInstruction {
     }
 
     @Contract("_, _ -> new")
-    public static @NotNull SystemReadyInstruction fromString(@NotNull String stringRepresentation, Station origin) throws InstructionInvalidException {
-        if(stringRepresentation.equals(InstructionNameHelper.getNameForInstruction(SystemReadyInstruction.class))) {
-            return new SystemReadyInstruction(origin);
+    public static @NotNull ChatLeaveInstruction fromString(@NotNull String stringRepresentation, Station origin) throws InstructionInvalidException {
+        if(stringRepresentation.equals(InstructionNameHelper.getNameForInstruction(ChatLeaveInstruction.class))) {
+            return new ChatLeaveInstruction(origin);
         }
 
         throw new InstructionInvalidException();
