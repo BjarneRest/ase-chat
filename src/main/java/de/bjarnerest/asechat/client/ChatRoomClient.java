@@ -76,12 +76,16 @@ public class ChatRoomClient {
         this.clientDataOs.write("\n".getBytes(StandardCharsets.UTF_8));
     }
 
+    protected InputStream getUserInputStream() {
+        return System.in;
+    }
+
     public void handleUserInput () {
         Thread userThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 String line;
-                Scanner scanner = new Scanner(System.in);
+                Scanner scanner = new Scanner(getUserInputStream());
                 scanner.nextLine();
                 while ((line = scanner.nextLine()) != null) {
                     Message message = new Message(line, user);
