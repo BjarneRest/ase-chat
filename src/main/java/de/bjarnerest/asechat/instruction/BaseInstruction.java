@@ -19,6 +19,10 @@ public abstract class BaseInstruction {
 
   public abstract String toString();
 
+  public Station getOrigin() {
+    return origin;
+  }
+
   @SuppressWarnings("unused")
   @Contract("_, _ -> fail")
   public static @NotNull BaseInstruction fromString(@NotNull String stringRepresentation, Station origin)
