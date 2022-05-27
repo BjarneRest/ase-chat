@@ -1,7 +1,9 @@
 package de.bjarnerest.asechat;
 
 import de.bjarnerest.asechat.helper.HashingHelper;
+import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
 import de.bjarnerest.asechat.model.Message;
+import de.bjarnerest.asechat.model.Station;
 import de.bjarnerest.asechat.model.User;
 import de.bjarnerest.asechat.server.ChatRoomServer;
 import java.time.Duration;
@@ -165,9 +167,31 @@ class ChatRoomServerTest {
 
     }
 
+    @Test
+    void testLeave() throws IOException {
+
+        this.prepareSubject(InetAddress.getByName("127.0.0.1"), 50501);
+
+        // Mock client socket
+        final MockServerSocket mockServerSocket1 = new MockServerSocket();
+        Mockito.when(this.serverSocket.accept()).thenReturn(mockServerSocket1.getSocket());
+        this.subject.setTestModeMaxClients(1);
+        Thread serverThread = this.startServer();
+
+
+        ChatLeaveInstruction leaveInstruction = new ChatLeaveInstruction(Station.CLIENT);
+        mockServerSocket1.writeLine(leaveInstruction.toString());
+        mockServerSocket1.awaitReady();
+
+        serverThread.interrupt();
+
+    }
+
     private static class MockServerSocket {
 
         private final Socket socket;
+
+        private boolean closed = false;
         private final PipedInputStream inputStream;
         private final PipedOutputStream inputOfInputStream;
         //private final BufferedReader bufferedReader;
@@ -190,6 +214,10 @@ class ChatRoomServerTest {
             this.bufferedOutputOfOutputStream = new BufferedReader(new InputStreamReader(this.outputOfOutputStream));
             Mockito.when(this.socket.getOutputStream()).thenReturn(this.outputStream);
             Mockito.when(this.socket.getInputStream()).thenReturn(this.inputStream);
+            Mockito.when(this.socket.isClosed()).thenAnswer(invocation -> {
+                closed = true;
+                return null;
+            });
         }
 
         public void writeLine(String line) throws IOException {
@@ -198,6 +226,10 @@ class ChatRoomServerTest {
 
         public Socket getSocket() {
             return socket;
+        }
+
+        public boolean isClosed() {
+            return closed;
         }
 
         public PipedInputStream getInputStream() {
