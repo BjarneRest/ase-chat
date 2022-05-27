@@ -13,6 +13,7 @@ public class ChatLeaveInstruction extends BaseInstruction {
     super(origin);
   }
 
+  @SuppressWarnings("unused")
   @Contract("_, _ -> new")
   public static @NotNull ChatLeaveInstruction fromString(@NotNull String stringRepresentation, Station origin)
       throws InstructionInvalidException {

@@ -13,6 +13,7 @@ public class ChatMessageEchoInstruction extends ChatMessageSendInstruction {
     super(origin, message);
   }
 
+  @SuppressWarnings("unused")
   @Contract("_, _ -> new")
   public static @NotNull ChatMessageEchoInstruction fromString(String stringRepresentation, Station origin)
       throws InstructionInvalidException {

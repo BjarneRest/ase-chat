@@ -16,6 +16,7 @@ public class ChatMessageSendInstruction extends BaseInstruction {
     this.message = message;
   }
 
+  @SuppressWarnings("unused")
   @Contract("_, _ -> new")
   public static @NotNull ChatMessageSendInstruction fromString(String stringRepresentation, Station origin)
       throws InstructionInvalidException {

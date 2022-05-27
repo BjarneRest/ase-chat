@@ -13,6 +13,7 @@ public class SystemReadyInstruction extends BaseInstruction {
     super(origin);
   }
 
+  @SuppressWarnings("unused")
   @Contract("_, _ -> new")
   public static @NotNull SystemReadyInstruction fromString(@NotNull String stringRepresentation, Station origin)
       throws InstructionInvalidException {

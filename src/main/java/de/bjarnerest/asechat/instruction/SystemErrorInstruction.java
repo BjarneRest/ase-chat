@@ -14,6 +14,7 @@ public class SystemErrorInstruction extends BaseInstruction {
     this.cause = cause;
   }
 
+  @SuppressWarnings("unused")
   @Contract("_, _ -> new")
   public static @NotNull SystemErrorInstruction fromString(String stringRepresentation, Station origin)
       throws InstructionInvalidException {

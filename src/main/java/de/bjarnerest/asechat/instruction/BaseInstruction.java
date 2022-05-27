@@ -1,6 +1,9 @@
 package de.bjarnerest.asechat.instruction;
 
+import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.model.Station;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class BaseInstruction {
 
@@ -15,5 +18,14 @@ public abstract class BaseInstruction {
   }
 
   public abstract String toString();
+
+  @SuppressWarnings("unused")
+  @Contract("_, _ -> fail")
+  public static @NotNull BaseInstruction fromString(@NotNull String stringRepresentation, Station origin)
+      throws InstructionInvalidException {
+
+    throw new InstructionInvalidException();
+
+  }
 
 }

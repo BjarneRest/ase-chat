@@ -18,6 +18,7 @@ public class SystemAuthenticateInstruction extends BaseInstruction {
     this.password = password;
   }
 
+  @SuppressWarnings("unused")
   @Contract("_, _ -> new")
   public static @NotNull SystemAuthenticateInstruction fromString(String stringRepresentation, Station origin)
       throws InstructionInvalidException {
