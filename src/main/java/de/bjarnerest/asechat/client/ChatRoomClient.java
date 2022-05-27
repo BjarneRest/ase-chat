@@ -48,20 +48,20 @@ public class ChatRoomClient {
     public void receiveMessage() throws Exception {
         String line;
         while((line = serverDataBuffered.readLine()) != null) {
-            System.out.println(line);
+            //System.out.println(line);
             if(line.equals("system:ready")) {
                 authenticated = true;
                 Message message = new Message("Hello Welt. Hier ist " + user.getUsername(), user);
                 this.sendLine("chat:message:send=" + message.toJson());
                 handleUserInput();
             }
-            if (line.equals("system:authenticate")) {
+            else if (line.equals("system:authenticate")) {
                 this.authenticate();
             }
-            if (line.startsWith("chat:message:send")) {
+            else if (line.startsWith("chat:message:send")) {
                 String messageJson = line.split("=")[1];
                 Message message = Message.fromJson(messageJson);
-                System.out.printf("%s: %s\n", message.getMessageSender().getUsername(), message.getMessageText());
+                System.out.printf("\n%s: %s\n>>> ", message.getMessageSender().getUsername(), message.getMessageText());
             }
         }
     }
@@ -71,7 +71,7 @@ public class ChatRoomClient {
     }
 
     private void sendLine(String line) throws Exception {
-        System.out.println("send line = " + line);
+        //System.out.println("send line = " + line);
         this.clientDataOs.write(line.getBytes(StandardCharsets.UTF_8));
         this.clientDataOs.write("\n".getBytes(StandardCharsets.UTF_8));
     }
@@ -86,8 +86,25 @@ public class ChatRoomClient {
             public void run() {
                 String line;
                 Scanner scanner = new Scanner(getUserInputStream());
-                scanner.nextLine();
+                System.out.print("\n>>> ");
                 while ((line = scanner.nextLine()) != null) {
+                    System.out.print("\n>>> ");
+
+                    if(line.startsWith("/")) {
+
+                        if(line.equals("/leave") || line.equals("/quit")) {
+                            try {
+                                sendLine("chat:leave");
+                                socket.close();
+                                scanner.close();
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+
+                        return;
+                    }
+
                     Message message = new Message(line, user);
 
                     try {
@@ -95,6 +112,7 @@ public class ChatRoomClient {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+
                 }
             }
         });
