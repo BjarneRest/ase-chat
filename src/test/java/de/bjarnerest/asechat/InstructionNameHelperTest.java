@@ -1,6 +1,6 @@
 package de.bjarnerest.asechat;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
@@ -25,8 +25,14 @@ public class InstructionNameHelperTest {
   void testNameToClass() throws InstructionInvalidException {
 
     assertEquals(ChatLeaveInstruction.class, InstructionNameHelper.parseInstruction("chat:leave", Station.CLIENT).getClass());
-    assertEquals(SystemReadyInstruction.class, InstructionNameHelper.parseInstruction("system:ready", Station.SERVER).getClass());
-    assertEquals(SystemErrorInstruction.class, InstructionNameHelper.parseInstruction("system:error=parsing", Station.SERVER).getClass());
+    assertEquals(
+        SystemReadyInstruction.class,
+        InstructionNameHelper.parseInstruction("system:ready", Station.SERVER).getClass()
+    );
+    assertEquals(
+        SystemErrorInstruction.class,
+        InstructionNameHelper.parseInstruction("system:error=parsing", Station.SERVER).getClass()
+    );
 
   }
 

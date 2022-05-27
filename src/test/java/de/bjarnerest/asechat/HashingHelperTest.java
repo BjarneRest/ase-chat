@@ -1,9 +1,10 @@
 package de.bjarnerest.asechat;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import de.bjarnerest.asechat.helper.HashingHelper;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class HashingHelperTest {
 
@@ -12,7 +13,6 @@ public class HashingHelperTest {
 
     String str = "karlsruhe";
     String hashed = HashingHelper.hashSha512WithSalt(str);
-
 
     // Test verification
     assertFalse(HashingHelper.verifySha512WithSalt("bye", hashed));

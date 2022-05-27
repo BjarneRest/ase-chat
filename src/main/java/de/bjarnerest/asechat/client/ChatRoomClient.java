@@ -80,7 +80,7 @@ public class ChatRoomClient {
   protected InputStream getUserInputStream() {
     return System.in;
   }
-  
+
   protected PrintStream getUserOutputStream() {
     return System.out;
   }

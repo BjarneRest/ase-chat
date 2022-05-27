@@ -1,11 +1,13 @@
 package de.bjarnerest.asechat;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import de.bjarnerest.asechat.helper.UserNameHelper;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class UserNameHelperTest {
 
