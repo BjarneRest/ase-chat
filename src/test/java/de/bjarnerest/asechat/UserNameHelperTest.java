@@ -14,12 +14,12 @@ public class UserNameHelperTest {
 
     final Set<String> usernameSet = new HashSet<>();
 
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 100; i++) {
       usernameSet.add(UserNameHelper.generateUsername());
     }
 
     // When duplicates have occurred, the set size would not increase
-    assertEquals(1000, usernameSet.size());
+    assertEquals(100, usernameSet.size());
 
   }
 

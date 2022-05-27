@@ -130,7 +130,7 @@ public class ChatRoomClientTest {
 
 
 
-        fakeUserOutput.write("\nHi!\n".getBytes(StandardCharsets.UTF_8));
+        fakeUserOutput.write("Hi!\n".getBytes(StandardCharsets.UTF_8));
         await().atMost(Duration.ofSeconds(2)).until(mockOutputBuffered::ready);
 
         String line2 = mockOutputBuffered.readLine();
