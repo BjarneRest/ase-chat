@@ -16,22 +16,12 @@ public class ChatMessageSendInstruction extends BaseInstruction {
     this.message = message;
   }
 
-  public @NotNull Message getMessage() {
-    return message;
-  }
-
-  @Override
-  public String toString() {
-
-    return InstructionNameHelper.getNameForInstruction(this.getClass())
-    + "=" + this.message.toJson();
-  }
-
   @Contract("_, _ -> new")
-  public static @NotNull ChatMessageSendInstruction fromString(String stringRepresentation, Station origin) throws InstructionInvalidException {
+  public static @NotNull ChatMessageSendInstruction fromString(String stringRepresentation, Station origin)
+      throws InstructionInvalidException {
 
     String[] split = splitInstruction(stringRepresentation);
-    if(!split[0].equals(InstructionNameHelper.getNameForInstruction(ChatMessageSendInstruction.class))) {
+    if (!split[0].equals(InstructionNameHelper.getNameForInstruction(ChatMessageSendInstruction.class))) {
       throw new InstructionInvalidException();
     }
 
@@ -43,6 +33,17 @@ public class ChatMessageSendInstruction extends BaseInstruction {
       throw new InstructionInvalidException();
     }
 
+  }
+
+  public @NotNull Message getMessage() {
+    return message;
+  }
+
+  @Override
+  public String toString() {
+
+    return InstructionNameHelper.getNameForInstruction(this.getClass())
+        + "=" + this.message.toJson();
   }
 
 }

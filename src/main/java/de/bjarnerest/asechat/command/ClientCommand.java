@@ -2,7 +2,6 @@ package de.bjarnerest.asechat.command;
 
 import de.bjarnerest.asechat.client.ChatRoomClient;
 import de.bjarnerest.asechat.helper.ConfigHelper;
-
 import java.net.InetAddress;
 import java.util.logging.Logger;
 import picocli.CommandLine.Command;
@@ -32,11 +31,9 @@ public class ClientCommand implements Runnable {
     try {
       ChatRoomClient client = new ChatRoomClient(InetAddress.getByName(hostIp), port, password, username);
       client.connectToServer();
-    }
-    catch(Exception e) {
+    } catch (Exception e) {
 
     }
-
 
 
   }

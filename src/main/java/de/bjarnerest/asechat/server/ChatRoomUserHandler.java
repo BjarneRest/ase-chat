@@ -1,6 +1,5 @@
 package de.bjarnerest.asechat.server;
 
-import com.google.gson.stream.MalformedJsonException;
 import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.instruction.BaseInstruction;
 import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
@@ -32,10 +31,12 @@ class ChatRoomUserHandler extends Thread {
   private PrintWriter out;
 
   public ChatRoomUserHandler(ChatRoomServer chatRoomServer, Socket clientSocket) {
+
     this.chatRoomServer = chatRoomServer;
     this.clientSocket = clientSocket;
     this.clientId = UUID.randomUUID();
     logger.fine("Assigned clientId " + this.clientId);
+
   }
 
   @Override
@@ -48,13 +49,19 @@ class ChatRoomUserHandler extends Thread {
 
       this.out = out;
       String inLine;
+
       if (!chatRoomServer.isProtected()) {
+
         this.authenticate();
+
       } else {
+
         this.executeInstruction(new SystemAuthenticateInstruction(Station.SERVER));
+
       }
 
       while (!left && chatRoomServer.isRunning() && (inLine = in.readLine()) != null) {
+
         logger.finest("Received line: " + inLine);
         handleMessage(inLine);
 
@@ -63,21 +70,29 @@ class ChatRoomUserHandler extends Thread {
     } catch (IOException e) {
       e.printStackTrace();
     } finally {
+
       logger.info("Removing user handler for client " + this.clientId);
       chatRoomServer.removeUserHandler(this);
       try {
+
         this.clientSocket.close();
+
       } catch (IOException e) {
+
         e.printStackTrace();
+
       }
+
     }
 
   }
 
   private void authenticate() {
+
     this.authenticated = true;
     logger.fine("Greeting new client with system:ready");
     this.executeInstruction(new SystemReadyInstruction(Station.SERVER));
+
   }
 
   private void handleMessage(@NotNull String line) {
@@ -85,25 +100,35 @@ class ChatRoomUserHandler extends Thread {
     BaseInstruction instruction;
 
     try {
+
       instruction = InstructionNameHelper.parseInstruction(line, Station.CLIENT);
+
     } catch (InstructionInvalidException e) {
+
       logger.warning("Could not parse instruction " + e);
       this.executeInstruction(new SystemErrorInstruction(Station.SERVER, "parsing"));
       return;
+
     }
 
     if (!authenticated) {
 
       if (instruction instanceof SystemAuthenticateInstruction) {
+
         SystemAuthenticateInstruction authenticateInstruction = (SystemAuthenticateInstruction) instruction;
 
         logger.fine("Client tries to authenticate.");
+
         if (chatRoomServer.checkPassword(authenticateInstruction.getPassword())) {
+
           logger.fine("Password matched.");
           this.authenticate();
           return;
+
         } else {
+
           logger.fine("Password wrong.");
+
         }
 
       }
@@ -114,6 +139,7 @@ class ChatRoomUserHandler extends Thread {
     }
 
     if (instruction instanceof ChatMessageSendInstruction) {
+
       ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
 
       // Client wants so send message
@@ -124,22 +150,30 @@ class ChatRoomUserHandler extends Thread {
       this.executeInstruction(new ChatMessageEchoInstruction(Station.SERVER, chatMessageSendInstruction.getMessage()));
 
     } else if (instruction instanceof ChatLeaveInstruction) {
+
       logger.info("User left chatroom: " + this.clientId);
       this.left = true;
+
     } else {
+
       logger.warning("Client (" + this.clientId + ") command cannot be interpreted: " + line);
       this.executeInstruction(new SystemErrorInstruction(Station.SERVER, "no_such_command"));
+
     }
 
   }
 
   public void executeInstruction(@NotNull BaseInstruction instruction) {
+
     this.out.println(instruction);
+
   }
 
   public void publishMessage(@NotNull Message message) {
+
     logger.fine("Publishing message: " + message.toJson());
     this.executeInstruction(new ChatMessageSendInstruction(Station.SERVER, message));
+
   }
 
   @NotNull

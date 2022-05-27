@@ -13,18 +13,21 @@ public class SystemReadyInstruction extends BaseInstruction {
     super(origin);
   }
 
-  @Override
-  public String toString() {
-    return InstructionNameHelper.getNameForInstruction(this.getClass());
-  }
-
   @Contract("_, _ -> new")
-  public static @NotNull SystemReadyInstruction fromString(@NotNull String stringRepresentation, Station origin) throws InstructionInvalidException {
-    if(stringRepresentation.equals(InstructionNameHelper.getNameForInstruction(SystemReadyInstruction.class))) {
+  public static @NotNull SystemReadyInstruction fromString(@NotNull String stringRepresentation, Station origin)
+      throws InstructionInvalidException {
+
+    if (stringRepresentation.equals(InstructionNameHelper.getNameForInstruction(SystemReadyInstruction.class))) {
       return new SystemReadyInstruction(origin);
     }
 
     throw new InstructionInvalidException();
+
+  }
+
+  @Override
+  public String toString() {
+    return InstructionNameHelper.getNameForInstruction(this.getClass());
   }
 
 }

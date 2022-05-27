@@ -18,25 +18,13 @@ public class SystemAuthenticateInstruction extends BaseInstruction {
     this.password = password;
   }
 
-  @Override
-  public String toString() {
-    String stringRepresentation = InstructionNameHelper.getNameForInstruction(this.getClass());
-    if(!this.password.isEmpty()) {
-      stringRepresentation += "=" + this.password;
-    }
-
-    return stringRepresentation;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
   @Contract("_, _ -> new")
-  public static @NotNull SystemAuthenticateInstruction fromString(String stringRepresentation, Station origin) throws InstructionInvalidException {
+  public static @NotNull SystemAuthenticateInstruction fromString(String stringRepresentation, Station origin)
+      throws InstructionInvalidException {
 
     String[] split = splitInstruction(stringRepresentation);
-    if(!split[0].equals(InstructionNameHelper.getNameForInstruction(SystemAuthenticateInstruction.class))) {
+
+    if (!split[0].equals(InstructionNameHelper.getNameForInstruction(SystemAuthenticateInstruction.class))) {
       throw new InstructionInvalidException();
     }
 
@@ -45,6 +33,20 @@ public class SystemAuthenticateInstruction extends BaseInstruction {
 
     return new SystemAuthenticateInstruction(origin, password);
 
+  }
+
+  @Override
+  public String toString() {
+    String stringRepresentation = InstructionNameHelper.getNameForInstruction(this.getClass());
+    if (!this.password.isEmpty()) {
+      stringRepresentation += "=" + this.password;
+    }
+
+    return stringRepresentation;
+  }
+
+  public String getPassword() {
+    return password;
   }
 
 }

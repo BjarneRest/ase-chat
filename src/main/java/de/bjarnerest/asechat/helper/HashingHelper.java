@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 public class HashingHelper {
 
   private static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+  private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
 
   public static @NotNull String hashSha512WithSalt(@NotNull String subject) {
 
@@ -26,19 +27,19 @@ public class HashingHelper {
 
   public static boolean verifySha512WithSalt(@NotNull String subject, @NotNull String hashedRepresentation) {
 
-      String[] splitString = hashedRepresentation.split(":");
-      if(splitString.length != 2) {
-        return false;
-      }
-      String saltRepresentation = splitString[0];
-      String hashRepresentation = splitString[1];
+    String[] splitString = hashedRepresentation.split(":");
+    if (splitString.length != 2) {
+      return false;
+    }
+    String saltRepresentation = splitString[0];
+    String hashRepresentation = splitString[1];
 
-      byte[] saltBytes = hexStringToByteArray(saltRepresentation);
+    byte[] saltBytes = hexStringToByteArray(saltRepresentation);
 
-      byte[] realHash = hashSha512(mergeByteArrays(saltBytes, subject.getBytes(StandardCharsets.UTF_8)));
-      String realHashString = bytesToHex(realHash);
+    byte[] realHash = hashSha512(mergeByteArrays(saltBytes, subject.getBytes(StandardCharsets.UTF_8)));
+    String realHashString = bytesToHex(realHash);
 
-      return realHashString.equals(hashRepresentation);
+    return realHashString.equals(hashRepresentation);
 
   }
 
@@ -81,8 +82,6 @@ public class HashingHelper {
 
   }
 
-  private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
-
   @Contract(value = "_ -> new", pure = true)
   private static @NotNull String bytesToHex(byte @NotNull [] bytes) {
     byte[] hexChars = new byte[bytes.length * 2];
@@ -99,7 +98,7 @@ public class HashingHelper {
     byte[] data = new byte[len / 2];
     for (int i = 0; i < len; i += 2) {
       data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-          + Character.digit(s.charAt(i+1), 16));
+          + Character.digit(s.charAt(i + 1), 16));
     }
     return data;
   }

@@ -14,9 +14,12 @@ public class InstructionNameHelper {
   public static @NotNull String getNameForInstruction(@NotNull Class<? extends BaseInstruction> instructionClass) {
     StringBuilder instructionName = new StringBuilder();
     for (String w : instructionClass.getSimpleName().split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")) {
-      if (w.equalsIgnoreCase("instruction")) continue;
-      if(instructionName.length() != 0)
+      if (w.equalsIgnoreCase("instruction")) {
+        continue;
+      }
+      if (instructionName.length() != 0) {
         instructionName.append(':');
+      }
       instructionName.append(w.toLowerCase());
     }
 
@@ -24,11 +27,11 @@ public class InstructionNameHelper {
 
   }
 
-  public static BaseInstruction parseInstruction(String stringRepresentation, Station origin) throws InstructionInvalidException {
+  public static BaseInstruction parseInstruction(String stringRepresentation, Station origin)
+      throws InstructionInvalidException {
 
     Reflections reflections = new Reflections(BaseInstruction.class.getPackageName());
     Set<Class<? extends BaseInstruction>> subClasses = reflections.getSubTypesOf(BaseInstruction.class);
-
 
     final List<Class<? extends BaseInstruction>> resultClass = new ArrayList<>();
 
@@ -39,8 +42,9 @@ public class InstructionNameHelper {
         .findFirst()
         .ifPresent(resultClass::add);
 
-    if(resultClass.isEmpty())
+    if (resultClass.isEmpty()) {
       throw new InstructionInvalidException("No class found");
+    }
 
     Class<? extends BaseInstruction> instructionClass = resultClass.get(0);
     try {

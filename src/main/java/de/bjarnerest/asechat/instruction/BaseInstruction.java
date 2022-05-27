@@ -10,10 +10,10 @@ public abstract class BaseInstruction {
     this.origin = origin;
   }
 
-  public abstract String toString();
-
   public static String[] splitInstruction(String stringRepresentation) {
     return stringRepresentation.split("=", 2);
   }
+
+  public abstract String toString();
 
 }

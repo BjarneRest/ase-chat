@@ -21,61 +21,83 @@ public class ChatRoomServer {
   private boolean running;
 
   public ChatRoomServer(InetAddress host, int port) {
+
     this(host, port, "");
+
   }
 
   public ChatRoomServer(InetAddress host, int port, String passwordHash) {
+
     this.host = host;
     this.port = port;
     this.passwordHash = passwordHash;
     this.userHandlers = new ArrayList<>();
+
   }
 
   public void setTestModeMaxClients(@SuppressWarnings("SameParameterValue") int testModeMaxClients) {
+
     logger.info("Enabling test mode. Refusing connections with more than " + testModeMaxClients + " clients");
     this.testModeMaxClients = testModeMaxClients;
+
   }
 
   protected void createSocket() throws IOException {
+
     this.serverSocket = new ServerSocket(this.port, 50, this.host);
+
   }
 
   public void startServer() throws IOException {
-      if (this.running) {
-          return;
-      }
+
+    if (this.running) {
+      return;
+    }
 
     this.running = true;
     this.createSocket();
+
     while (running && (this.testModeMaxClients == -1 || this.testModeMaxClients > this.userHandlers.size())) {
+
       logger.fine("Waiting for new client to connect.");
       ChatRoomUserHandler userHandler = new ChatRoomUserHandler(this, serverSocket.accept());
       logger.info("New client socket connected. Starting user handler thread.");
       userHandler.start();
       this.userHandlers.add(userHandler);
+
     }
+
     this.serverSocket.close();
+
   }
 
   public void publishMessage(Message message, UUID publisher) {
+
     logger.info("Publishing message: " + message.toJson());
     logger.fine("Message sent by " + publisher);
     this.userHandlers.stream()
         .filter(userHandler -> userHandler.authenticated)
         .filter(userHandler -> !userHandler.getClientId().equals(publisher))
         .forEach(userHandler -> userHandler.publishMessage(message));
+
   }
 
   public void removeUserHandler(ChatRoomUserHandler handler) {
+
     this.userHandlers.remove(handler);
+
   }
 
   public boolean isProtected() {
+
     return !this.passwordHash.isEmpty();
+
   }
 
   public boolean checkPassword(String passwordToCheck) {
+
     return HashingHelper.verifySha512WithSalt(passwordToCheck, this.passwordHash);
+
   }
 
   public boolean isRunning() {

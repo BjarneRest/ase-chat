@@ -23,9 +23,16 @@ public class ConfigHelper {
   }
 
   public static ConfigHelper getInstance() {
+
     if (instance == null) {
       instance = new ConfigHelper();
     }
+    return instance;
+
+  }
+
+  public static ConfigHelper forceNewInstance() {
+    instance = new ConfigHelper();
     return instance;
   }
 
@@ -104,11 +111,6 @@ public class ConfigHelper {
 
   public Configuration getConfig() {
     return config;
-  }
-
-  public static ConfigHelper forceNewInstance() {
-    instance = new ConfigHelper();
-    return instance;
   }
 
 }
