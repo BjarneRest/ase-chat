@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import org.junit.jupiter.api.AfterEach;
@@ -39,6 +40,8 @@ public class ChatRoomClientTest {
 
     private PipedOutputStream fakeUserOutput;
 
+    private PipedInputStream fakeUserScreen;
+
     private PipedOutputStream mockInput;
 
     private BufferedReader mockOutputBuffered;
@@ -55,6 +58,18 @@ public class ChatRoomClientTest {
             @Override
             protected InputStream getUserInputStream() {
                 return fakeUserInput;
+            }
+
+            @Override
+            protected PrintStream getUserOutputStream() {
+                PipedOutputStream pis = new PipedOutputStream();
+                fakeUserScreen = new PipedInputStream();
+                try {
+                    fakeUserScreen.connect(pis);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return new PrintStream(pis);
             }
         };
     }
@@ -103,19 +118,7 @@ public class ChatRoomClientTest {
         clientThread.interrupt();
     }
 
-    @Test
-    void authenticationTest() throws Exception {
-
-        mockInput.write("system:authenticate\n".getBytes(StandardCharsets.UTF_8));
-        await().atMost(Duration.ofSeconds(2)).until(mockOutputBuffered::ready);
-        String line = mockOutputBuffered.readLine();
-
-        assertEquals("system:authenticate=password", line);
-
-    }
-
-    @Test
-    void userMessageTest() throws Exception {
+    private void catchGreeting() throws IOException, InstructionInvalidException {
 
         mockInput.write("system:ready\n".getBytes(StandardCharsets.UTF_8));
 
@@ -131,6 +134,23 @@ public class ChatRoomClientTest {
         assertEquals("username", chatMessageSendInstruction.getMessage().getMessageSender().getUsername());
 
 
+    }
+
+    @Test
+    void authenticationTest() throws Exception {
+
+        mockInput.write("system:authenticate\n".getBytes(StandardCharsets.UTF_8));
+        await().atMost(Duration.ofSeconds(2)).until(mockOutputBuffered::ready);
+        String line = mockOutputBuffered.readLine();
+
+        assertEquals("system:authenticate=password", line);
+
+    }
+
+    @Test
+    void userMessageTest() throws Exception {
+
+        catchGreeting();
 
 
         fakeUserOutput.write("Hi!\n".getBytes(StandardCharsets.UTF_8));
@@ -150,18 +170,7 @@ public class ChatRoomClientTest {
     @Test
     void testLeave() throws IOException, InstructionInvalidException {
 
-        mockInput.write("system:ready\n".getBytes(StandardCharsets.UTF_8));
-
-        // Greeting message
-        await().atMost(Duration.ofSeconds(2)).until(mockOutputBuffered::ready);
-
-        String line = mockOutputBuffered.readLine();
-        BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.CLIENT);
-        assertInstanceOf(ChatMessageSendInstruction.class, instruction);
-
-        ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
-        assertEquals("Hello Welt. Hier ist username", chatMessageSendInstruction.getMessage().getMessageText());
-        assertEquals("username", chatMessageSendInstruction.getMessage().getMessageSender().getUsername());
+        catchGreeting();
 
         fakeUserOutput.write("/leave\n".getBytes(StandardCharsets.UTF_8));
         await().atMost(Duration.ofSeconds(2)).until(mockOutputBuffered::ready);
@@ -169,6 +178,37 @@ public class ChatRoomClientTest {
         String line2 = mockOutputBuffered.readLine();
         BaseInstruction instruction2 = InstructionNameHelper.parseInstruction(line2, Station.CLIENT);
         assertInstanceOf(ChatLeaveInstruction.class, instruction2);
+
+    }
+
+    @Test
+    void testMessageReceive() throws IOException, InstructionInvalidException {
+
+        catchGreeting();
+
+        User dummyUser = new User("Heinz");
+        Message dummyMessage = new Message("What a beautiful day!", dummyUser);
+        ChatMessageSendInstruction chatMessageSendInstruction = new ChatMessageSendInstruction(Station.SERVER, dummyMessage);
+
+        // Flush input
+        while (fakeUserScreen.available() > 0) {
+            fakeUserScreen.read();
+        }
+
+        mockInput.write((chatMessageSendInstruction + "\n").getBytes(StandardCharsets.UTF_8));
+        await().atMost(Duration.ofSeconds(2)).until(() -> fakeUserScreen.available() > 0);
+
+        String expected = "\n" + dummyUser.getUsername() + ": " + dummyMessage.getMessageText();
+
+        byte[] received = new byte[expected.length()];
+        fakeUserScreen.read(received);
+
+        String readString = new String(received);
+
+        assertEquals(expected, readString);
+
+
+
 
     }
 

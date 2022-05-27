@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +51,7 @@ public class ChatRoomClient {
   public void receiveMessage() throws Exception {
     String line;
     while ((line = serverDataBuffered.readLine()) != null) {
-      //System.out.println(line);
+      //getUserOutputStream().println(line);
       if (line.equals("system:ready")) {
         authenticated = true;
         Message message = new Message("Hello Welt. Hier ist " + user.getUsername(), user);
@@ -61,7 +62,7 @@ public class ChatRoomClient {
       } else if (line.startsWith("chat:message:send")) {
         String messageJson = line.split("=")[1];
         Message message = Message.fromJson(messageJson);
-        System.out.printf("\n%s: %s\n>>> ", message.getMessageSender().getUsername(), message.getMessageText());
+        getUserOutputStream().printf("\n%s: %s\n>>> ", message.getMessageSender().getUsername(), message.getMessageText());
       }
     }
   }
@@ -71,13 +72,17 @@ public class ChatRoomClient {
   }
 
   private void sendLine(String line) throws Exception {
-    //System.out.println("send line = " + line);
+    //getUserOutputStream().println("send line = " + line);
     this.clientDataOs.write(line.getBytes(StandardCharsets.UTF_8));
     this.clientDataOs.write("\n".getBytes(StandardCharsets.UTF_8));
   }
 
   protected InputStream getUserInputStream() {
     return System.in;
+  }
+  
+  protected PrintStream getUserOutputStream() {
+    return System.out;
   }
 
   public void handleUserInput() {
@@ -86,9 +91,9 @@ public class ChatRoomClient {
       public void run() {
         String line;
         Scanner scanner = new Scanner(getUserInputStream());
-        System.out.print("\n>>> ");
+        getUserOutputStream().print("\n>>> ");
         while ((line = scanner.nextLine()) != null) {
-          System.out.print("\n>>> ");
+          getUserOutputStream().print("\n>>> ");
 
           if (line.startsWith("/")) {
 
