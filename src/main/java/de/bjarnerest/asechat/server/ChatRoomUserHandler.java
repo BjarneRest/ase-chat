@@ -158,7 +158,8 @@ class ChatRoomUserHandler extends Thread {
 
     if(instruction instanceof ChangeUserInstruction) {
       boolean firstMeet = user == null;
-      this.user = ((ChangeUserInstruction) instruction).getUser();
+      ChangeUserInstruction changeUserInstruction = (ChangeUserInstruction) instruction;
+      this.user = changeUserInstruction.getUser();
       if(firstMeet) {
         if (this.user == null) {
           this.askUserInfo();
@@ -166,6 +167,7 @@ class ChatRoomUserHandler extends Thread {
           endHandshake();
         }
       }
+      executeInstruction(changeUserInstruction.copywithStation(Station.SERVER));
       return;
     }
 

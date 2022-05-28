@@ -71,7 +71,8 @@ class ChatRoomServerTest {
     assertEquals("change:user", mockSocket.readLine());
 
     mockSocket.writeLine("change:user=" + user.toJson());
-
+    mockSocket.awaitReady();
+    assertEquals("change:user=" + user.toJson(), mockSocket.readLine());
 
   }
 
