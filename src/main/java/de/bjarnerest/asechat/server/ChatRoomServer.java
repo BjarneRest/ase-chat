@@ -2,6 +2,7 @@ package de.bjarnerest.asechat.server;
 
 import de.bjarnerest.asechat.helper.HashingHelper;
 import de.bjarnerest.asechat.model.Message;
+import de.bjarnerest.asechat.model.PngImage;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -79,6 +80,17 @@ public class ChatRoomServer {
         .filter(userHandler -> userHandler.authenticated)
         .filter(userHandler -> !userHandler.getUserId().equals(message.getMessageSender().getId()))
         .forEach(userHandler -> userHandler.publishMessage(message));
+
+  }
+
+  public void publishPng(PngImage pngImage) {
+
+    logger.info("Publishing png: " + pngImage.getFileName());
+    logger.fine("Png sent by " + pngImage.getSender().getId());
+    this.userHandlers.stream()
+        .filter(userHandler -> userHandler.authenticated)
+        .filter(userHandler -> !userHandler.getUserId().equals(pngImage.getSender().getId()))
+        .forEach(userHandler -> userHandler.publishPng(pngImage));
 
   }
 

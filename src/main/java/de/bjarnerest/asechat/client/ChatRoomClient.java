@@ -4,9 +4,13 @@ import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.instruction.*;
 import de.bjarnerest.asechat.model.AnsiColor;
 import de.bjarnerest.asechat.model.Message;
+import de.bjarnerest.asechat.model.PngImage;
 import de.bjarnerest.asechat.model.Station;
 import de.bjarnerest.asechat.model.User;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -14,6 +18,9 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class ChatRoomClient {
@@ -26,6 +33,8 @@ public class ChatRoomClient {
   BufferedReader serverDataBuffered;
   private Socket socket;
   private boolean authenticated = false;
+
+  private PngImage tempPng;
 
   public ChatRoomClient(InetAddress host, int port, String password, String username, AnsiColor color) {
     this.host = host;
@@ -79,6 +88,9 @@ public class ChatRoomClient {
       } else if (instruction instanceof ChangeUserInstruction) {
         ChangeUserInstruction castInstruction = (ChangeUserInstruction) instruction;
         handleInstruction(castInstruction);
+      } else if (instruction instanceof ChatMessagePngInstruction) {
+        ChatMessagePngInstruction castInstruction = (ChatMessagePngInstruction) instruction;
+        handleInstruction(castInstruction);
       }
 
     }
@@ -101,9 +113,22 @@ public class ChatRoomClient {
   }
 
   public void handleInstruction (ChatMessageSendInstruction chatMessageSendInstruction) throws Exception {
+    if(chatMessageSendInstruction instanceof ChatMessageEchoInstruction) return; // Discard
     Message message = chatMessageSendInstruction.getMessage();
     User messageSender = message.getMessageSender();
     getUserOutputStream().printf("\n%s%s%s: %s\n>>> ", messageSender.getColor().code, messageSender.getUsername(), AnsiColor.RESET.code, message.getMessageText());
+  }
+
+  public void handleInstruction (ChatMessagePngInstruction chatMessagePngInstruction) throws Exception {
+    this.tempPng = chatMessagePngInstruction.getPngImage();
+    User sender = tempPng.getSender();
+    getUserOutputStream().printf("\nEs liegt ein neues Foto (%s %d Bytes) von Nutzer %s%s%s vor. Tippe /save um es dauerhaft zu speichern.\n>>>",
+        tempPng.getFileName(),
+        tempPng.getBytes().length,
+        sender.getColor().code,
+        sender.getUsername(),
+        AnsiColor.RESET.code
+    );
   }
 
   public void handleInstruction (ChatInfoInstruction chatInfoInstruction) throws Exception {
@@ -218,6 +243,47 @@ public class ChatRoomClient {
               catch (Exception e) {
                 e.printStackTrace();
               }
+            }
+            else if (line.startsWith("/png ")) {
+              String[] split = line.split(" ", 2);
+              String filePath = split[1];
+              Path path = Paths.get(filePath);
+              try {
+                byte[] data = Files.readAllBytes(path);
+                PngImage pngImage = new PngImage(path.getFileName().toString(), data, user);
+                sendInstruction(new ChatMessagePngInstruction(Station.CLIENT, pngImage));
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+
+
+            }
+            else if(line.equals("/save")) {
+
+              if(tempPng != null) {
+
+                File file = new File("Chat-" + tempPng.getFileName());
+                try {
+                  if(file.exists()) {
+                    file.delete();
+                  } else {
+                    file.createNewFile();
+                  }
+
+                  try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                    outputStream.write(tempPng.getBytes());
+                  }
+                  tempPng = null;
+                } catch (IOException e) {
+                  throw new RuntimeException(e);
+                }
+
+
+
+              } else {
+                getUserOutputStream().print("\nNothing to save\n>>>");
+              }
+
             }
 
             continue;

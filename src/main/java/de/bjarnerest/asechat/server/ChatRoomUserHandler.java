@@ -4,6 +4,7 @@ import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.instruction.*;
 import de.bjarnerest.asechat.model.AnsiColor;
 import de.bjarnerest.asechat.model.Message;
+import de.bjarnerest.asechat.model.PngImage;
 import de.bjarnerest.asechat.model.Station;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -193,6 +194,13 @@ class ChatRoomUserHandler extends Thread {
       this.executeInstruction(new ChatMessageEchoInstruction(Station.SERVER, chatMessageSendInstruction.getMessage()));
 
     }
+    else if (instruction instanceof ChatMessagePngInstruction) {
+
+      ChatMessagePngInstruction chatMessagePngInstruction = (ChatMessagePngInstruction) instruction;
+      chatRoomServer.publishPng(chatMessagePngInstruction.getPngImage());
+
+
+    }
     else if (instruction instanceof ChatLeaveInstruction) {
 
       logger.info("User left chatroom: " + getUserId());
@@ -233,6 +241,13 @@ class ChatRoomUserHandler extends Thread {
 
     logger.fine("Publishing message: " + message.toJson());
     this.executeInstruction(new ChatMessageSendInstruction(Station.SERVER, message));
+
+  }
+
+  public void publishPng(@NotNull PngImage pngImage) {
+
+    logger.fine("Publishing png: " + pngImage.getFileName());
+    this.executeInstruction(new ChatMessagePngInstruction(Station.SERVER, pngImage));
 
   }
 
