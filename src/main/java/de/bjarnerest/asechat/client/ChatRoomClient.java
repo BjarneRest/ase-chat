@@ -62,35 +62,52 @@ public class ChatRoomClient {
       BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.SERVER);
 
       if (instruction instanceof SystemReadyInstruction) {
-        authenticated = true;
-        Message message = new Message("Hallo Welt. Hier ist " + user.getUsername(), user);
-        this.sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
-        this.sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
-        this.sendInstruction(new ChatInfoInstruction(Station.CLIENT));
-        handleUserInput();
+        SystemReadyInstruction castInstruction = (SystemReadyInstruction) instruction;
+        handleInstruction(castInstruction);
       }
       else if (instruction instanceof SystemAuthenticateInstruction) {
-        this.authenticate();
+        SystemAuthenticateInstruction castInstruction = (SystemAuthenticateInstruction) instruction;
+        handleInstruction(castInstruction);
       }
       else if (instruction instanceof ChatMessageSendInstruction) {
-        ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
-        Message message = chatMessageSendInstruction.getMessage();
-        User messageSender = message.getMessageSender();
-        getUserOutputStream().printf("\n%s%s%s: %s\n>>> ", messageSender.getColor().code, messageSender.getUsername(), AnsiColor.RESET.code, message.getMessageText());
+        ChatMessageSendInstruction castInstruction = (ChatMessageSendInstruction) instruction;
+        handleInstruction(castInstruction);
       }
       else if (instruction instanceof ChatInfoInstruction) {
-        ChatInfoInstruction chatInfoInstruction = (ChatInfoInstruction) instruction;
+        ChatInfoInstruction castInstruction = (ChatInfoInstruction) instruction;
+        handleInstruction(castInstruction);
+      }
 
-        AnsiColor color = AnsiColor.RED;
-        getUserOutputStream().printf(
+    }
+  }
+
+  public void handleInstruction (SystemReadyInstruction instruction) throws Exception {
+    authenticated = true;
+    Message message = new Message("Hallo Welt. Hier ist " + user.getUsername(), user);
+    this.sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
+    this.sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
+    this.sendInstruction(new ChatInfoInstruction(Station.CLIENT));
+    handleUserInput();
+  }
+
+  public void handleInstruction (SystemAuthenticateInstruction instruction) throws Exception {
+    this.authenticate();
+  }
+
+  public void handleInstruction (ChatMessageSendInstruction chatMessageSendInstruction) throws Exception {
+    Message message = chatMessageSendInstruction.getMessage();
+    User messageSender = message.getMessageSender();
+    getUserOutputStream().printf("\n%s%s%s: %s\n>>> ", messageSender.getColor().code, messageSender.getUsername(), AnsiColor.RESET.code, message.getMessageText());
+  }
+
+  public void handleInstruction (ChatInfoInstruction chatInfoInstruction) throws Exception {
+
+    AnsiColor color = AnsiColor.RED;
+    getUserOutputStream().printf(
             "\n%sAktuell befinden sich %s Clients im Chatraum.%s\n>>>",
             color.code,
             chatInfoInstruction.getConnectedClientsAmount(),
-            AnsiColor.RESET.code
-        );
-
-      }
-    }
+            AnsiColor.RESET.code);
   }
 
   public void authenticate() throws Exception {
