@@ -48,12 +48,12 @@ In order to send a message just type in what you have to say
 
 Possible in chat commands:
 
-| Command         | Description                                                                |
-|-----------------|----------------------------------------------------------------------------|
-| /chat leave     | Leave chat room                                                            |
-| /chat quit      | Leave chat room                                                            |
-| /color message  | Changes the color of all following chat messages until it is changed again |
-| /color username | Changes the color of the username                                          |
-| /info           | Displays the number of clients connected to the user                       |
-| /username       | Change your username                                                       |
+| Command                              | Description                                                                |
+|--------------------------------------|----------------------------------------------------------------------------|
+| /chat leave                          | Leave chat room                                                            |
+| /chat quit                           | Leave chat room                                                            |
+| /color message + the color you want  | Changes the color of all following chat messages until it is changed again |
+| /color username + the color you want | Changes the color of the username                                          |
+| /info                                | Displays the number of clients connected to the user                       |
+| /username + the username you want    | Change your username                                                       |
 
