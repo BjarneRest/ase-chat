@@ -21,6 +21,8 @@ class ChatRoomUserHandler extends Thread {
   private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
   private final ChatRoomServer chatRoomServer;
   private User user;
+
+  private final UUID tempUserId = UUID.randomUUID();
   
   private AnsiColor color = null;
   private final Socket clientSocket;
@@ -46,13 +48,17 @@ class ChatRoomUserHandler extends Thread {
       this.out = out;
       String inLine;
 
-      if (!chatRoomServer.isProtected()) {
+      if(!authenticated) {
 
-        this.authenticate();
+        if (!chatRoomServer.isProtected()) {
 
-      } else {
+          this.authenticate();
 
-        this.executeInstruction(new SystemAuthenticateInstruction(Station.SERVER));
+        } else {
+
+          this.executeInstruction(new SystemAuthenticateInstruction(Station.SERVER));
+
+        }
 
       }
 
@@ -67,7 +73,7 @@ class ChatRoomUserHandler extends Thread {
       e.printStackTrace();
     } finally {
 
-      logger.info("Removing user handler for client " + user.getId());
+      logger.info("Removing user handler for client " + getUserId());
       chatRoomServer.removeUserHandler(this);
       try {
 
@@ -86,6 +92,19 @@ class ChatRoomUserHandler extends Thread {
   private void authenticate() {
 
     this.authenticated = true;
+    askUserInfo();
+
+  }
+
+  private void askUserInfo() {
+
+    logger.fine("Asking for user info");
+    this.executeInstruction(new ChangeUserInstruction(Station.SERVER));
+
+  }
+
+  private void endHandshake() {
+
     logger.fine("Greeting new client with system:ready");
     this.executeInstruction(new SystemReadyInstruction(Station.SERVER));
 
@@ -134,12 +153,30 @@ class ChatRoomUserHandler extends Thread {
       return;
     }
 
+    if(instruction instanceof ChangeUserInstruction) {
+      boolean firstMeet = user == null;
+      this.user = ((ChangeUserInstruction) instruction).getUser();
+      if(firstMeet) {
+        if (this.user == null) {
+          this.askUserInfo();
+        } else {
+          endHandshake();
+        }
+      }
+      return;
+    }
+
+    if(user == null) {
+      this.askUserInfo();
+      return;
+    }
+
     if (instruction instanceof ChatMessageSendInstruction) {
 
       ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
 
       // Client wants so send message
-      logger.fine("Received message from client " + user.getId());
+      logger.fine("Received message from client " + getUserId());
 
       logger.fine("Message content: " + chatMessageSendInstruction.getMessage().toJson());
 
@@ -152,7 +189,7 @@ class ChatRoomUserHandler extends Thread {
 
     } else if (instruction instanceof ChatLeaveInstruction) {
 
-      logger.info("User left chatroom: " + user.getId());
+      logger.info("User left chatroom: " + getUserId());
       this.left = true;
 
     } else if (instruction instanceof ChatChangeColorInstruction) {
@@ -168,12 +205,10 @@ class ChatRoomUserHandler extends Thread {
       ChatInfoInstruction chatInfoInstruction = new ChatInfoInstruction(Station.SERVER, amount);
       executeInstruction(chatInfoInstruction);
 
-    } else if (instruction instanceof ChangeUserInstruction) {
-      this.user = ((ChangeUserInstruction) instruction).getUser();
     }
     else {
 
-      logger.warning("Client (" + user.getId() + ") command cannot be interpreted: " + line);
+      logger.warning("Client (" + getUserId() + ") command cannot be interpreted: " + line);
       this.executeInstruction(new SystemErrorInstruction(Station.SERVER, "no_such_command"));
 
     }
@@ -198,7 +233,7 @@ class ChatRoomUserHandler extends Thread {
   }
 
   public UUID getUserId() {
-    return user != null ? user.getId() : UUID.randomUUID();
+    return user != null ? getUser().getId() : this.tempUserId;
   }
 
 }

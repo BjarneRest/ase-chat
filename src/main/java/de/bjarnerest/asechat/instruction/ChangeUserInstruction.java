@@ -6,20 +6,29 @@ import de.bjarnerest.asechat.model.Station;
 import de.bjarnerest.asechat.model.User;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ChangeUserInstruction extends BaseInstruction {
 
-    private final @NotNull User user;
+    private final @Nullable User user;
 
-    public ChangeUserInstruction(Station origin, @NotNull User user) {
+    public ChangeUserInstruction(Station origin, User user) {
         super(origin);
         this.user = user;
+    }
+
+    public ChangeUserInstruction(Station origin) {
+        this(origin, null);
     }
 
     @SuppressWarnings("unused")
     @Contract("_, _ -> new")
     public static @NotNull ChangeUserInstruction fromString(String stringRepresentation, Station origin)
             throws InstructionInvalidException {
+
+        if(!stringRepresentation.contains("=")) {
+            return new ChangeUserInstruction(origin);
+        }
 
         String[] split = splitInstruction(stringRepresentation);
 
@@ -32,12 +41,16 @@ public class ChangeUserInstruction extends BaseInstruction {
 
     }
 
-    public User getUser() {
+    public @Nullable User getUser() {
         return user;
     }
 
     @Override
     public String toString() {
+
+        if(user == null) {
+            return InstructionNameHelper.getNameForInstruction(this.getClass());
+        }
 
         return InstructionNameHelper.getNameForInstruction(this.getClass())
                 + "=" + this.user.toJson();

@@ -64,6 +64,16 @@ class ChatRoomServerTest {
     return serverThread;
   }
 
+  private void introduce(MockSocket mockSocket, User user) throws IOException {
+
+    mockSocket.awaitReady();
+    assertEquals("change:user", mockSocket.readLine());
+
+    mockSocket.writeLine("change:user=" + user.toJson());
+
+
+  }
+
   @Test
   void serverMessagingTest() throws IOException {
     this.prepareSubject(InetAddress.getByName("127.0.0.1"), 50501);
@@ -77,6 +87,10 @@ class ChatRoomServerTest {
         .thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
     this.subject.setTestModeMaxClients(2);
     Thread serverThread = this.startServer();
+
+    // Check for change:user
+    introduce(mockSocket1, fakeUser1);
+    introduce(mockSocket2, fakeUser2);
 
     // Check for system:ready
     mockSocket1.awaitReady();
@@ -143,17 +157,23 @@ class ChatRoomServerTest {
 
     // Try to authenticate client 2 with correct password
     mockSocket2.writeLine("system:authenticate=securePasswordTest");
+
+    introduce(mockSocket2, fakeUser2);
+
     mockSocket2.awaitReady();
     assertEquals("system:ready", mockSocket2.readLine());
 
     // Publish message
-    Message dummyMsg1 = new Message("hw", fakeUser1);
+    Message dummyMsg1 = new Message("hw", fakeUser2);
     mockSocket2.writeLine("chat:message:send=" + dummyMsg1.toJson());
     mockSocket2.awaitReady();
     assertEquals("chat:message:echo=" + dummyMsg1.toJson(), mockSocket2.readLine());
 
     // Login client 1
     mockSocket1.writeLine("system:authenticate=securePasswordTest");
+
+    introduce(mockSocket1, fakeUser1);
+
     mockSocket1.awaitReady();
     assertEquals("system:ready", mockSocket1.readLine());
 
@@ -203,17 +223,25 @@ class ChatRoomServerTest {
     // Mock client socket
     final MockSocket mockSocket1 = new MockSocket();
     final MockSocket mockSocket2 = new MockSocket();
+    final User fakeUser1 = new User("Hans");
+    final User fakeUser2 = new User("Hilde");
     Mockito.when(this.serverSocket.accept())
         .thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
     this.subject.setTestModeMaxClients(2);
     Thread serverThread = this.startServer();
 
+    introduce(mockSocket1, fakeUser1);
+    introduce(mockSocket2, fakeUser2);
+
+    // system:ready
+    mockSocket1.awaitReady();
+    mockSocket1.readLine();
+
+
     ChatInfoInstruction chatInfoInstructionClient = new ChatInfoInstruction(Station.CLIENT);
     mockSocket1.writeLine(chatInfoInstructionClient.toString());
     mockSocket1.awaitReady();
-    // system:ready
-    mockSocket1.readLine();
-    mockSocket1.awaitReady();
+
 
     String line = mockSocket1.readLine();
     BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.SERVER);

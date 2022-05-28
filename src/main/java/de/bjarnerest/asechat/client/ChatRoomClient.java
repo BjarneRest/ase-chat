@@ -64,13 +64,13 @@ public class ChatRoomClient {
       if (instruction instanceof SystemReadyInstruction) {
         authenticated = true;
         Message message = new Message("Hello Welt. Hier ist " + user.getUsername(), user);
-        this.sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
         this.sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
         this.sendInstruction(new ChatInfoInstruction(Station.CLIENT));
         handleUserInput();
       } else if (instruction instanceof SystemAuthenticateInstruction) {
         this.authenticate();
       } else if (instruction instanceof ChatMessageSendInstruction) {
+        if(instruction instanceof ChatMessageEchoInstruction) continue; // Discard
         ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
         Message message = chatMessageSendInstruction.getMessage();
         User messageSender = message.getMessageSender();
@@ -86,6 +86,8 @@ public class ChatRoomClient {
             AnsiColor.RESET.code
         );
 
+      } else if (instruction instanceof ChangeUserInstruction) {
+        this.sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
       }
     }
   }
@@ -137,12 +139,19 @@ public class ChatRoomClient {
 
               String[] split = line.split(" ");
               String colorStr = split[2].toUpperCase();
-              AnsiColor color = AnsiColor.valueOf(colorStr);
+              AnsiColor color = user.getColor();
+              try {
+                color = AnsiColor.valueOf(colorStr);
+              } catch (IllegalArgumentException ex) {
+                getUserOutputStream().print("\nThis is not a valid color.\n>>>");
+              }
+
 
               if(split[1].equals("username")) {
                 user.setColor(color);
                 try {
                   sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
+                  printName();
                 } catch (Exception e) {
                   e.printStackTrace();
                 }
@@ -152,6 +161,7 @@ public class ChatRoomClient {
               ChatChangeColorInstruction instruction = new ChatChangeColorInstruction(Station.CLIENT, color);
               try {
                 sendInstruction(instruction);
+                getUserOutputStream().printf("\nYour messages are now %s%s%s\n>>>", color.code, color, AnsiColor.RESET.code);
               } catch (Exception e) {
                 throw new RuntimeException(e);
               }
@@ -171,6 +181,7 @@ public class ChatRoomClient {
               user.setUsername(split[1]);
               try {
                 sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
+                printName();
               } catch (Exception e) {
                 e.printStackTrace();
               }
@@ -193,6 +204,10 @@ public class ChatRoomClient {
 
     userThread.start();
 
+  }
+
+  private void printName() {
+    getUserOutputStream().printf("\nYour name has been set to %s%s%s\n>>>", user.getColor().code, user.getUsername(), AnsiColor.RESET.code);
   }
 
 }

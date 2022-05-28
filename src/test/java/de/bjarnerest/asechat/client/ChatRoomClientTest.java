@@ -229,7 +229,7 @@ public class ChatRoomClientTest {
         .until(() -> fakeUserScreen.available() > 0);
 
     String expected = "\n"
-        + AnsiColor.RESET.code
+        + dummyUser.getColor().code
         + dummyUser.getUsername()
         + AnsiColor.RESET.code
         + ": "
