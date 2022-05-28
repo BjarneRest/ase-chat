@@ -25,7 +25,8 @@ public class ConfigInitializerShadowCommand implements Runnable {
   public void run() {
     if (ignoreConfig) {
       ConfigHelper.getInstance().initTemp();
-    } else {
+    }
+    else {
       ConfigHelper.getInstance().init(configFilePath);
     }
   }

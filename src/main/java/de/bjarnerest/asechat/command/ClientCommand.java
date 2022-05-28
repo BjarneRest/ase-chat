@@ -37,7 +37,8 @@ public class ClientCommand implements Runnable {
     try {
       ChatRoomClient client = new ChatRoomClient(InetAddress.getByName(hostIp), port, password, username, color);
       client.connectToServer();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
 
     }
 

@@ -52,7 +52,8 @@ public class InstructionNameHelper {
       Class<?>[] argTypes = {String.class, Station.class};
       Object instance = instructionClass.getMethod("fromString", argTypes).invoke(null, args);
       return (BaseInstruction) instance;
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new InstructionInvalidException(e);
     }
 

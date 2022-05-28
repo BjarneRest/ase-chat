@@ -54,7 +54,8 @@ class ChatRoomUserHandler extends Thread {
 
           this.authenticate();
 
-        } else {
+        }
+        else {
 
           this.executeInstruction(new SystemAuthenticateInstruction(Station.SERVER));
 
@@ -69,9 +70,11 @@ class ChatRoomUserHandler extends Thread {
 
       }
 
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       e.printStackTrace();
-    } finally {
+    }
+    finally {
 
       logger.info("Removing user handler for client " + getUserId());
       chatRoomServer.removeUserHandler(this);
@@ -187,18 +190,21 @@ class ChatRoomUserHandler extends Thread {
       chatRoomServer.publishMessage(chatMessageSendInstruction.getMessage());
       this.executeInstruction(new ChatMessageEchoInstruction(Station.SERVER, chatMessageSendInstruction.getMessage()));
 
-    } else if (instruction instanceof ChatLeaveInstruction) {
+    }
+    else if (instruction instanceof ChatLeaveInstruction) {
 
       logger.info("User left chatroom: " + getUserId());
       this.left = true;
 
-    } else if (instruction instanceof ChatChangeColorInstruction) {
+    }
+    else if (instruction instanceof ChatChangeColorInstruction) {
 
       ChatChangeColorInstruction chatChangeColorInstruction = (ChatChangeColorInstruction) instruction;
       this.color = chatChangeColorInstruction.getColor();
 
 
-    } else if (instruction instanceof ChatInfoInstruction) {
+    }
+    else if (instruction instanceof ChatInfoInstruction) {
 
       // User wants clients amount
       int amount = chatRoomServer.getConnectedClientsAmount();
