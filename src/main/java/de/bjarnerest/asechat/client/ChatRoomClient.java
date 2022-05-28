@@ -63,7 +63,7 @@ public class ChatRoomClient {
 
       if (instruction instanceof SystemReadyInstruction) {
         authenticated = true;
-        Message message = new Message("Hello Welt. Hier ist " + user.getUsername(), user);
+        Message message = new Message("Hallo Welt. Hier ist " + user.getUsername(), user);
         this.sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
         this.sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
         this.sendInstruction(new ChatInfoInstruction(Station.CLIENT));
