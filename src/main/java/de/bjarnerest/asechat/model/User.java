@@ -1,14 +1,20 @@
 package de.bjarnerest.asechat.model;
 
 import com.google.gson.Gson;
+import java.util.UUID;
 
 public class User {
 
+  private final UUID id = UUID.randomUUID();
   private String username;
   private AnsiColor color;
 
   public User(String username) {
     this.username = username;
+  }
+
+  public UUID getId() {
+    return id;
   }
 
   public void setUsername(String username) {

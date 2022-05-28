@@ -3,9 +3,11 @@ package de.bjarnerest.asechat.model;
 import com.google.gson.Gson;
 import com.google.gson.stream.MalformedJsonException;
 import java.util.Objects;
+import java.util.UUID;
 
 public class Message {
 
+  private final UUID id = UUID.randomUUID();
   private String messageText;
   private User messageSender;
 
@@ -20,6 +22,10 @@ public class Message {
 
     return new Gson().fromJson(json, Message.class);
 
+  }
+
+  public UUID getId() {
+    return id;
   }
 
   public String getMessageText() {
