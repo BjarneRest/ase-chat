@@ -76,6 +76,9 @@ public class ChatRoomClient {
       else if (instruction instanceof ChatInfoInstruction) {
         ChatInfoInstruction castInstruction = (ChatInfoInstruction) instruction;
         handleInstruction(castInstruction);
+      } else if (instruction instanceof ChangeUserInstruction) {
+        ChangeUserInstruction castInstruction = (ChangeUserInstruction) instruction;
+        handleInstruction(castInstruction);
       }
 
     }
@@ -84,10 +87,13 @@ public class ChatRoomClient {
   public void handleInstruction (SystemReadyInstruction instruction) throws Exception {
     authenticated = true;
     Message message = new Message("Hallo Welt. Hier ist " + user.getUsername(), user);
-    this.sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
     this.sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
     this.sendInstruction(new ChatInfoInstruction(Station.CLIENT));
     handleUserInput();
+  }
+
+  public void handleInstruction (ChangeUserInstruction instruction) throws Exception {
+    this.sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
   }
 
   public void handleInstruction (SystemAuthenticateInstruction instruction) throws Exception {

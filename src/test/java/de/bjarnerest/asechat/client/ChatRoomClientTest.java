@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import de.bjarnerest.asechat.client.ChatRoomClient;
 import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.instruction.BaseInstruction;
+import de.bjarnerest.asechat.instruction.ChangeUserInstruction;
 import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
 import de.bjarnerest.asechat.instruction.ChatInfoInstruction;
 import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
@@ -313,6 +314,29 @@ public class ChatRoomClientTest {
 
     fakeUserOutput.write("/info\n".getBytes(StandardCharsets.UTF_8));
     catchInfo();
+
+  }
+
+  @Test
+  void testChangeUser() throws IOException, InstructionInvalidException {
+
+    catchGreeting();
+    catchInfo();
+
+    fakeUserOutput.write("/username Peter\n".getBytes(StandardCharsets.UTF_8));
+
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(mockOutputBuffered::ready);
+
+    String line = mockOutputBuffered.readLine();
+    BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.CLIENT);
+    assertInstanceOf(ChangeUserInstruction.class, instruction);
+
+    ChangeUserInstruction changeUserInstruction = (ChangeUserInstruction) instruction;
+    assert changeUserInstruction.getUser() != null;
+    assertEquals("Peter", changeUserInstruction.getUser().getUsername());
+
 
   }
 
