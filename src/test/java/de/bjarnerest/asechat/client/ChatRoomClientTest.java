@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import de.bjarnerest.asechat.client.ChatRoomClient;
 import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.instruction.BaseInstruction;
+import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
 import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
 import de.bjarnerest.asechat.instruction.ChatMessageSendInstruction;
 import de.bjarnerest.asechat.instruction.InstructionInvalidException;
@@ -91,8 +92,10 @@ public class ChatRoomClientTest {
     // Network input
     final PipedOutputStream pipedOutputStream = new PipedOutputStream();
     final PipedInputStream pipedInputStream = new PipedInputStream();
-    Mockito.when(fakeSocket.getOutputStream()).thenReturn(pipedOutputStream);
-    Mockito.when(fakeSocket.getInputStream()).thenReturn(pipedInputStream);
+    Mockito.when(fakeSocket.getOutputStream())
+        .thenReturn(pipedOutputStream);
+    Mockito.when(fakeSocket.getInputStream())
+        .thenReturn(pipedInputStream);
 
     final PipedInputStream mockOutput = new PipedInputStream();
     pipedOutputStream.connect(mockOutput);
@@ -120,7 +123,9 @@ public class ChatRoomClientTest {
     mockInput.write("system:ready\n".getBytes(StandardCharsets.UTF_8));
 
     // Greeting message
-    await().atMost(Duration.ofSeconds(2)).until(mockOutputBuffered::ready);
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(mockOutputBuffered::ready);
 
     String line = mockOutputBuffered.readLine();
     BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.CLIENT);
@@ -137,7 +142,9 @@ public class ChatRoomClientTest {
   void authenticationTest() throws Exception {
 
     mockInput.write("system:authenticate\n".getBytes(StandardCharsets.UTF_8));
-    await().atMost(Duration.ofSeconds(2)).until(mockOutputBuffered::ready);
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(mockOutputBuffered::ready);
     String line = mockOutputBuffered.readLine();
 
     assertEquals("system:authenticate=password", line);
@@ -150,7 +157,9 @@ public class ChatRoomClientTest {
     catchGreeting();
 
     fakeUserOutput.write("Hi!\n".getBytes(StandardCharsets.UTF_8));
-    await().atMost(Duration.ofSeconds(2)).until(mockOutputBuffered::ready);
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(mockOutputBuffered::ready);
 
     String line2 = mockOutputBuffered.readLine();
     BaseInstruction instruction2 = InstructionNameHelper.parseInstruction(line2, Station.CLIENT);
@@ -169,7 +178,9 @@ public class ChatRoomClientTest {
     catchGreeting();
 
     fakeUserOutput.write("/leave\n".getBytes(StandardCharsets.UTF_8));
-    await().atMost(Duration.ofSeconds(2)).until(mockOutputBuffered::ready);
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(mockOutputBuffered::ready);
 
     String line2 = mockOutputBuffered.readLine();
     BaseInstruction instruction2 = InstructionNameHelper.parseInstruction(line2, Station.CLIENT);
@@ -191,10 +202,19 @@ public class ChatRoomClientTest {
       fakeUserScreen.read();
     }
 
-    mockInput.write((chatMessageSendInstruction + "\n").getBytes(StandardCharsets.UTF_8));
-    await().atMost(Duration.ofSeconds(2)).until(() -> fakeUserScreen.available() > 0);
+    mockInput
+        .write((chatMessageSendInstruction + "\n").getBytes(StandardCharsets.UTF_8));
 
-    String expected = "\n" + AnsiColor.RESET.code + dummyUser.getUsername() + AnsiColor.RESET.code + ": " + dummyMessage.getMessageText();
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(() -> fakeUserScreen.available() > 0);
+
+    String expected = "\n"
+        + AnsiColor.RESET.code
+        + dummyUser.getUsername()
+        + AnsiColor.RESET.code
+        + ": "
+        + dummyMessage.getMessageText();
 
     byte[] received = new byte[expected.length()];
     fakeUserScreen.read(received);
@@ -203,6 +223,63 @@ public class ChatRoomClientTest {
 
     assertEquals(expected, readString);
 
+
+  }
+
+  @Test
+  void testUsernameColor() throws IOException, InstructionInvalidException {
+
+    catchGreeting();
+
+    final AnsiColor color = AnsiColor.BLUE;
+    User dummyUser = new User("Heinz", color);
+    Message dummyMessage = new Message("What a beautiful day!", dummyUser);
+    ChatMessageSendInstruction chatMessageSendInstruction = new ChatMessageSendInstruction(Station.SERVER, dummyMessage);
+
+    // Flush input
+    while (fakeUserScreen.available() > 0) {
+      fakeUserScreen.read();
+    }
+
+    mockInput
+        .write((chatMessageSendInstruction + "\n").getBytes(StandardCharsets.UTF_8));
+
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(() -> fakeUserScreen.available() > 0);
+
+    String expected = "\n"
+        + color.code
+        + dummyUser.getUsername()
+        + AnsiColor.RESET.code
+        + ": "
+        + dummyMessage.getMessageText();
+
+    byte[] received = new byte[expected.length()];
+    fakeUserScreen.read(received);
+
+    String readString = new String(received);
+
+    assertEquals(expected, readString);
+
+  }
+
+  @Test
+  void testSetMessageColor() throws IOException, InstructionInvalidException {
+
+    catchGreeting();
+
+    fakeUserOutput.write("/color message cyan\n".getBytes(StandardCharsets.UTF_8));
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(mockOutputBuffered::ready);
+
+    String line = mockOutputBuffered.readLine();
+    BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.CLIENT);
+    assertInstanceOf(ChatChangeColorInstruction.class, instruction);
+
+    ChatChangeColorInstruction chatChangeColorInstruction = (ChatChangeColorInstruction) instruction;
+    assertEquals(AnsiColor.CYAN, chatChangeColorInstruction.getColor());
 
   }
 

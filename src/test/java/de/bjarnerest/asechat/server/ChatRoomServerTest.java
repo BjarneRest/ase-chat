@@ -1,5 +1,6 @@
 package de.bjarnerest.asechat.server;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -18,7 +19,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import org.awaitility.Awaitility;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,7 +68,8 @@ class ChatRoomServerTest {
     final MockSocket mockSocket2 = new MockSocket();
     final User fakeUser1 = new User("Max");
     final User fakeUser2 = new User("Moritz");
-    Mockito.when(this.serverSocket.accept()).thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
+    Mockito.when(this.serverSocket.accept())
+        .thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
     this.subject.setTestModeMaxClients(2);
     Thread serverThread = this.startServer();
 
@@ -114,7 +115,8 @@ class ChatRoomServerTest {
     final User fakeUser1 = new User("Max");
     final User fakeUser2 = new User("catlover_9000");
 
-    Mockito.when(this.serverSocket.accept()).thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
+    Mockito.when(this.serverSocket.accept())
+        .thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
     this.subject.setTestModeMaxClients(2);
     Thread serverThread = this.startServer();
 
@@ -175,7 +177,8 @@ class ChatRoomServerTest {
 
     // Mock client socket
     final MockSocket mockSocket1 = new MockSocket();
-    Mockito.when(this.serverSocket.accept()).thenReturn(mockSocket1.getSocket());
+    Mockito.when(this.serverSocket.accept())
+        .thenReturn(mockSocket1.getSocket());
     this.subject.setTestModeMaxClients(1);
     Thread serverThread = this.startServer();
 
@@ -210,11 +213,14 @@ class ChatRoomServerTest {
       this.outputOfOutputStream = new PipedInputStream();
       this.outputOfOutputStream.connect(this.outputStream);
       this.bufferedOutputOfOutputStream = new BufferedReader(new InputStreamReader(this.outputOfOutputStream));
-      Mockito.when(this.socket.getOutputStream()).thenReturn(this.outputStream);
-      Mockito.when(this.socket.getInputStream()).thenReturn(this.inputStream);
-      Mockito.when(this.socket.isClosed()).thenAnswer(invocation -> {
-        closed = true;
-        return null;
+      Mockito.when(this.socket.getOutputStream())
+          .thenReturn(this.outputStream);
+      Mockito.when(this.socket.getInputStream())
+          .thenReturn(this.inputStream);
+      Mockito.when(this.socket.isClosed())
+          .thenAnswer(invocation -> {
+              closed = true;
+              return null;
       });
     }
 
@@ -251,7 +257,9 @@ class ChatRoomServerTest {
     }
 
     public void awaitReady() {
-      Awaitility.await().atMost(Duration.ofSeconds(2)).until(() -> getBufferedOutputOfOutputStream().ready());
+      await()
+          .atMost(Duration.ofSeconds(2))
+          .until(() -> getBufferedOutputOfOutputStream().ready());
     }
 
     public String readLine() throws IOException {
