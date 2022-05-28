@@ -1,5 +1,7 @@
 package de.bjarnerest.asechat.helper;
 
+import de.bjarnerest.asechat.model.AnsiColor;
+import java.util.Arrays;
 import java.util.Random;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,6 +30,12 @@ public class UserNameHelper {
     out.append(numbers.charAt(random.nextInt(numbers.length())));
 
     return out.toString();
+  }
+
+  public static @NotNull AnsiColor generateColor() {
+
+    return AnsiColor.colors[random.nextInt(AnsiColor.colors.length)];
+
   }
 
 }

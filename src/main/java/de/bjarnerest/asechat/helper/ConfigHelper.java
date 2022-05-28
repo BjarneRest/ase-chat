@@ -1,5 +1,6 @@
 package de.bjarnerest.asechat.helper;
 
+import de.bjarnerest.asechat.model.AnsiColor;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -102,6 +103,7 @@ public class ConfigHelper {
     newConfig.addProperty("client.host", "127.0.0.1");
     newConfig.addProperty("client.password", "");
     newConfig.addProperty("client.username", UserNameHelper.generateUsername());
+    newConfig.addProperty("client.color", UserNameHelper.generateColor().toString());
 
     builder.save();
 

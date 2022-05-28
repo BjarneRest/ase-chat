@@ -2,6 +2,7 @@ package de.bjarnerest.asechat.server;
 
 import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.instruction.BaseInstruction;
+import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
 import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
 import de.bjarnerest.asechat.instruction.ChatMessageEchoInstruction;
 import de.bjarnerest.asechat.instruction.ChatMessageSendInstruction;
@@ -9,6 +10,7 @@ import de.bjarnerest.asechat.instruction.InstructionInvalidException;
 import de.bjarnerest.asechat.instruction.SystemAuthenticateInstruction;
 import de.bjarnerest.asechat.instruction.SystemErrorInstruction;
 import de.bjarnerest.asechat.instruction.SystemReadyInstruction;
+import de.bjarnerest.asechat.model.AnsiColor;
 import de.bjarnerest.asechat.model.Message;
 import de.bjarnerest.asechat.model.Station;
 import java.io.BufferedReader;
@@ -25,6 +27,8 @@ class ChatRoomUserHandler extends Thread {
   private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
   private final ChatRoomServer chatRoomServer;
   private final UUID clientId;
+  
+  private AnsiColor color = null;
   private final Socket clientSocket;
   boolean authenticated = false;
   private boolean left;
@@ -146,6 +150,11 @@ class ChatRoomUserHandler extends Thread {
       logger.fine("Received message from client " + this.clientId);
 
       logger.fine("Message content: " + chatMessageSendInstruction.getMessage().toJson());
+
+      if (color != null) {
+        String messText = chatMessageSendInstruction.getMessage().getMessageText();
+        chatMessageSendInstruction.getMessage().setMessageText(color.code + messText + AnsiColor.RESET.code);
+      }
       chatRoomServer.publishMessage(chatMessageSendInstruction.getMessage(), this.clientId);
       this.executeInstruction(new ChatMessageEchoInstruction(Station.SERVER, chatMessageSendInstruction.getMessage()));
 
@@ -153,6 +162,12 @@ class ChatRoomUserHandler extends Thread {
 
       logger.info("User left chatroom: " + this.clientId);
       this.left = true;
+
+    } else if (instruction instanceof ChatChangeColorInstruction) {
+
+      ChatChangeColorInstruction chatChangeColorInstruction = (ChatChangeColorInstruction) instruction;
+      this.color = chatChangeColorInstruction.getColor();
+
 
     } else {
 

@@ -1,4 +1,4 @@
-package de.bjarnerest.asechat;
+package de.bjarnerest.asechat.helper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

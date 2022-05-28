@@ -2,7 +2,10 @@ package de.bjarnerest.asechat.command;
 
 import de.bjarnerest.asechat.client.ChatRoomClient;
 import de.bjarnerest.asechat.helper.ConfigHelper;
+import de.bjarnerest.asechat.model.AnsiColor;
 import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -25,16 +28,18 @@ public class ClientCommand implements Runnable {
   @Option(names = {"-u", "--username"}, description = "Name of User")
   String username = ConfigHelper.getInstance().getConfig().getString("client.username");
 
+  @Option(names = {"-c", "--color"}, description = "Color of Username")
+  AnsiColor color = AnsiColor.valueOf(ConfigHelper.getInstance().getConfig().getString("client.color"));
+
   @Override
   public void run() {
 
     try {
-      ChatRoomClient client = new ChatRoomClient(InetAddress.getByName(hostIp), port, password, username);
+      ChatRoomClient client = new ChatRoomClient(InetAddress.getByName(hostIp), port, password, username, color);
       client.connectToServer();
     } catch (Exception e) {
 
     }
-
 
   }
 }

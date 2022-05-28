@@ -1,4 +1,4 @@
-package de.bjarnerest.asechat;
+package de.bjarnerest.asechat.client;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,6 +10,7 @@ import de.bjarnerest.asechat.instruction.BaseInstruction;
 import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
 import de.bjarnerest.asechat.instruction.ChatMessageSendInstruction;
 import de.bjarnerest.asechat.instruction.InstructionInvalidException;
+import de.bjarnerest.asechat.model.AnsiColor;
 import de.bjarnerest.asechat.model.Message;
 import de.bjarnerest.asechat.model.Station;
 import de.bjarnerest.asechat.model.User;
@@ -193,7 +194,7 @@ public class ChatRoomClientTest {
     mockInput.write((chatMessageSendInstruction + "\n").getBytes(StandardCharsets.UTF_8));
     await().atMost(Duration.ofSeconds(2)).until(() -> fakeUserScreen.available() > 0);
 
-    String expected = "\n" + dummyUser.getUsername() + ": " + dummyMessage.getMessageText();
+    String expected = "\n" + AnsiColor.RESET.code + dummyUser.getUsername() + AnsiColor.RESET.code + ": " + dummyMessage.getMessageText();
 
     byte[] received = new byte[expected.length()];
     fakeUserScreen.read(received);

@@ -1,6 +1,9 @@
 package de.bjarnerest.asechat.client;
 
+import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
+import de.bjarnerest.asechat.model.AnsiColor;
 import de.bjarnerest.asechat.model.Message;
+import de.bjarnerest.asechat.model.Station;
 import de.bjarnerest.asechat.model.User;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -22,6 +25,13 @@ public class ChatRoomClient {
   BufferedReader serverDataBuffered;
   private Socket socket;
   private boolean authenticated = false;
+
+  public ChatRoomClient(InetAddress host, int port, String password, String username, AnsiColor color) {
+    this.host = host;
+    this.port = port;
+    this.password = password;
+    this.user = new User(username, color);
+  }
 
   public ChatRoomClient(InetAddress host, int port, String password, String username) {
     this.host = host;
@@ -62,7 +72,9 @@ public class ChatRoomClient {
       } else if (line.startsWith("chat:message:send")) {
         String messageJson = line.split("=")[1];
         Message message = Message.fromJson(messageJson);
-        getUserOutputStream().printf("\n%s: %s\n>>> ", message.getMessageSender().getUsername(), message.getMessageText());
+        User messageSender = message.getMessageSender();
+        AnsiColor userColor = messageSender.getColor() != null ? messageSender.getColor() : AnsiColor.RESET;
+        getUserOutputStream().printf("\n%s%s%s: %s\n>>> ", userColor.code, messageSender.getUsername(), AnsiColor.RESET.code, message.getMessageText());
       }
     }
   }
@@ -105,9 +117,29 @@ public class ChatRoomClient {
               } catch (Exception e) {
                 throw new RuntimeException(e);
               }
+              return;
+            } else if (line.startsWith("/color message ") || line.startsWith("/color username ")) {
+
+              String[] split = line.split(" ");
+              String colorStr = split[2].toUpperCase();
+              AnsiColor color = AnsiColor.valueOf(colorStr);
+
+              if(split[1].equals("username")) {
+                user.setColor(color);
+                continue;
+              }
+
+              ChatChangeColorInstruction instruction = new ChatChangeColorInstruction(Station.CLIENT, color);
+              try {
+                sendLine(instruction.toString());
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+
+
             }
 
-            return;
+            continue;
           }
 
           Message message = new Message(line, user);
