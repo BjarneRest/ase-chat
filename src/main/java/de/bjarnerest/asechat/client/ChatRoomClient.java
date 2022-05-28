@@ -1,7 +1,13 @@
 package de.bjarnerest.asechat.client;
 
+import de.bjarnerest.asechat.helper.InstructionNameHelper;
+import de.bjarnerest.asechat.instruction.BaseInstruction;
 import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
 import de.bjarnerest.asechat.instruction.ChatInfoInstruction;
+import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
+import de.bjarnerest.asechat.instruction.ChatMessageSendInstruction;
+import de.bjarnerest.asechat.instruction.SystemAuthenticateInstruction;
+import de.bjarnerest.asechat.instruction.SystemReadyInstruction;
 import de.bjarnerest.asechat.model.AnsiColor;
 import de.bjarnerest.asechat.model.Message;
 import de.bjarnerest.asechat.model.Station;
@@ -55,40 +61,47 @@ public class ChatRoomClient {
     return new Socket(host, port);
   }
 
-  public void sendMessage() throws Exception {
-    this.sendLine("Hello");
-  }
-
   public void receiveMessage() throws Exception {
     String line;
     while ((line = serverDataBuffered.readLine()) != null) {
-      //getUserOutputStream().println(line);
-      if (line.equals("system:ready")) {
+
+      BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.SERVER);
+
+      if (instruction instanceof SystemReadyInstruction) {
         authenticated = true;
         Message message = new Message("Hello Welt. Hier ist " + user.getUsername(), user);
-        this.sendLine("chat:message:send=" + message.toJson());
-        this.sendLine("chat:info");
+        this.sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
+        this.sendInstruction(new ChatInfoInstruction(Station.CLIENT));
         handleUserInput();
-      } else if (line.equals("system:authenticate")) {
+      } else if (instruction instanceof SystemAuthenticateInstruction) {
         this.authenticate();
-      } else if (line.startsWith("chat:message:send")) {
-        String messageJson = line.split("=")[1];
-        Message message = Message.fromJson(messageJson);
+      } else if (instruction instanceof ChatMessageSendInstruction) {
+        ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
+        Message message = chatMessageSendInstruction.getMessage();
         User messageSender = message.getMessageSender();
         AnsiColor userColor = messageSender.getColor() != null ? messageSender.getColor() : AnsiColor.RESET;
         getUserOutputStream().printf("\n%s%s%s: %s\n>>> ", userColor.code, messageSender.getUsername(), AnsiColor.RESET.code, message.getMessageText());
-      } else if (line.startsWith("chat:info=")) {
-        String amount = line.split("=")[1];
+      } else if (instruction instanceof ChatInfoInstruction) {
+        ChatInfoInstruction chatInfoInstruction = (ChatInfoInstruction) instruction;
 
         AnsiColor color = AnsiColor.RED;
-        getUserOutputStream().printf("\n%sAktuell befinden sich %s Clients im Chatraum.%s\n>>>", color.code, amount, AnsiColor.RESET.code);
+        getUserOutputStream().printf(
+            "\n%sAktuell befinden sich %s Clients im Chatraum.%s\n>>>",
+            color.code,
+            chatInfoInstruction.getConnectedClientsAmount(),
+            AnsiColor.RESET.code
+        );
 
       }
     }
   }
 
   public void authenticate() throws Exception {
-    this.sendLine("system:authenticate=" + password);
+    this.sendInstruction(new SystemAuthenticateInstruction(Station.CLIENT, password));
+  }
+
+  private void sendInstruction(BaseInstruction instruction) throws Exception {
+    this.sendLine(instruction.toString());
   }
 
   private void sendLine(String line) throws Exception {
@@ -119,7 +132,7 @@ public class ChatRoomClient {
 
             if (line.equals("/leave") || line.equals("/quit")) {
               try {
-                sendLine("chat:leave");
+                sendInstruction(new ChatLeaveInstruction(Station.CLIENT));
                 socket.close();
                 scanner.close();
               } catch (Exception e) {
@@ -139,7 +152,7 @@ public class ChatRoomClient {
 
               ChatChangeColorInstruction instruction = new ChatChangeColorInstruction(Station.CLIENT, color);
               try {
-                sendLine(instruction.toString());
+                sendInstruction(instruction);
               } catch (Exception e) {
                 throw new RuntimeException(e);
               }
@@ -149,7 +162,7 @@ public class ChatRoomClient {
 
               ChatInfoInstruction instruction = new ChatInfoInstruction(Station.CLIENT);
               try {
-                sendLine(instruction.toString());
+                sendInstruction(instruction);
               } catch (Exception e) {
                 throw new RuntimeException(e);
               }
@@ -162,7 +175,7 @@ public class ChatRoomClient {
           Message message = new Message(line, user);
 
           try {
-            sendLine("chat:message:send=" + message.toJson());
+            sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
           } catch (Exception e) {
             e.printStackTrace();
           }
