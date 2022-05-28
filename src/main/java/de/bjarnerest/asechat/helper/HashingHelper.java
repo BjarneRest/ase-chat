@@ -52,7 +52,8 @@ public class HashingHelper {
 
       hash = md.digest(subject);
 
-    } catch (NoSuchAlgorithmException e) {
+    }
+    catch (NoSuchAlgorithmException e) {
       logger.severe(e.toString());
     }
 

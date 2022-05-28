@@ -68,14 +68,17 @@ public class ChatRoomClient {
         this.sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
         this.sendInstruction(new ChatInfoInstruction(Station.CLIENT));
         handleUserInput();
-      } else if (instruction instanceof SystemAuthenticateInstruction) {
+      }
+      else if (instruction instanceof SystemAuthenticateInstruction) {
         this.authenticate();
-      } else if (instruction instanceof ChatMessageSendInstruction) {
+      }
+      else if (instruction instanceof ChatMessageSendInstruction) {
         ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
         Message message = chatMessageSendInstruction.getMessage();
         User messageSender = message.getMessageSender();
         getUserOutputStream().printf("\n%s%s%s: %s\n>>> ", messageSender.getColor().code, messageSender.getUsername(), AnsiColor.RESET.code, message.getMessageText());
-      } else if (instruction instanceof ChatInfoInstruction) {
+      }
+      else if (instruction instanceof ChatInfoInstruction) {
         ChatInfoInstruction chatInfoInstruction = (ChatInfoInstruction) instruction;
 
         AnsiColor color = AnsiColor.RED;
@@ -129,11 +132,13 @@ public class ChatRoomClient {
                 sendInstruction(new ChatLeaveInstruction(Station.CLIENT));
                 socket.close();
                 scanner.close();
-              } catch (Exception e) {
+              }
+              catch (Exception e) {
                 throw new RuntimeException(e);
               }
               return;
-            } else if (line.startsWith("/color message ") || line.startsWith("/color username ")) {
+            }
+            else if (line.startsWith("/color message ") || line.startsWith("/color username ")) {
 
               String[] split = line.split(" ");
               String colorStr = split[2].toUpperCase();
@@ -143,7 +148,8 @@ public class ChatRoomClient {
                 user.setColor(color);
                 try {
                   sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                   e.printStackTrace();
                 }
                 continue;
@@ -152,26 +158,31 @@ public class ChatRoomClient {
               ChatChangeColorInstruction instruction = new ChatChangeColorInstruction(Station.CLIENT, color);
               try {
                 sendInstruction(instruction);
-              } catch (Exception e) {
+              }
+              catch (Exception e) {
                 throw new RuntimeException(e);
               }
 
 
-            } else if(line.equals("/info")) {
+            }
+            else if(line.equals("/info")) {
 
               ChatInfoInstruction instruction = new ChatInfoInstruction(Station.CLIENT);
               try {
                 sendInstruction(instruction);
-              } catch (Exception e) {
+              }
+              catch (Exception e) {
                 throw new RuntimeException(e);
               }
 
-            } else if (line.startsWith("/username ")) {
+            }
+            else if (line.startsWith("/username ")) {
               String[] split = line.split(" ");
               user.setUsername(split[1]);
               try {
                 sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
-              } catch (Exception e) {
+              }
+              catch (Exception e) {
                 e.printStackTrace();
               }
             }
@@ -183,7 +194,8 @@ public class ChatRoomClient {
 
           try {
             sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
-          } catch (Exception e) {
+          }
+          catch (Exception e) {
             e.printStackTrace();
           }
 

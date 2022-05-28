@@ -56,7 +56,8 @@ class ChatRoomServerTest {
     Thread serverThread = new Thread(() -> {
       try {
         this.subject.startServer();
-      } catch (IOException e) {
+      }
+      catch (IOException e) {
         e.printStackTrace();
       }
     });

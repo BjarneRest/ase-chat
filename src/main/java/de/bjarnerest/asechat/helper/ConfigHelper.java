@@ -50,12 +50,14 @@ public class ConfigHelper {
       logger.fine("Generating temp config");
       try {
         this.config = generateDefaultConfigFile(configs, tempFile);
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         logger.severe("Error while generating default config" + e);
       }
 
       logger.fine("Temp config file: " + tempFile);
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       logger.severe("Could not create temp config" + e);
     }
 
@@ -70,17 +72,20 @@ public class ConfigHelper {
 
       try {
         this.config = configs.properties(configFile);
-      } catch (ConfigurationException e) {
+      }
+      catch (ConfigurationException e) {
         logger.severe("Error while reading config" + e);
       }
 
-    } else {
+    }
+    else {
 
       logger.info("Generating default config");
       try {
         Files.createFile(configFile.toPath());
         this.config = generateDefaultConfigFile(configs, configFile);
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         logger.severe("Error while generating default config" + e);
       }
 

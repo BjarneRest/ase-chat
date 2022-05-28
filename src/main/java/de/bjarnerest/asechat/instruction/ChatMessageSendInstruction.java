@@ -30,7 +30,8 @@ public class ChatMessageSendInstruction extends BaseInstruction {
     try {
       Message newMessage = Message.fromJson(split[1]);
       return new ChatMessageSendInstruction(origin, newMessage);
-    } catch (MalformedJsonException e) {
+    }
+    catch (MalformedJsonException e) {
       throw new InstructionInvalidException();
     }
 

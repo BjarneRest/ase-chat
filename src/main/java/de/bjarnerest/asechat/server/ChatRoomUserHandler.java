@@ -50,7 +50,8 @@ class ChatRoomUserHandler extends Thread {
 
         this.authenticate();
 
-      } else {
+      }
+      else {
 
         this.executeInstruction(new SystemAuthenticateInstruction(Station.SERVER));
 
@@ -63,9 +64,11 @@ class ChatRoomUserHandler extends Thread {
 
       }
 
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       e.printStackTrace();
-    } finally {
+    }
+    finally {
 
       logger.info("Removing user handler for client " + user.getId());
       chatRoomServer.removeUserHandler(this);
@@ -150,25 +153,29 @@ class ChatRoomUserHandler extends Thread {
       chatRoomServer.publishMessage(chatMessageSendInstruction.getMessage());
       this.executeInstruction(new ChatMessageEchoInstruction(Station.SERVER, chatMessageSendInstruction.getMessage()));
 
-    } else if (instruction instanceof ChatLeaveInstruction) {
+    }
+    else if (instruction instanceof ChatLeaveInstruction) {
 
       logger.info("User left chatroom: " + user.getId());
       this.left = true;
 
-    } else if (instruction instanceof ChatChangeColorInstruction) {
+    }
+    else if (instruction instanceof ChatChangeColorInstruction) {
 
       ChatChangeColorInstruction chatChangeColorInstruction = (ChatChangeColorInstruction) instruction;
       this.color = chatChangeColorInstruction.getColor();
 
 
-    } else if (instruction instanceof ChatInfoInstruction) {
+    }
+    else if (instruction instanceof ChatInfoInstruction) {
 
       // User wants clients amount
       int amount = chatRoomServer.getConnectedClientsAmount();
       ChatInfoInstruction chatInfoInstruction = new ChatInfoInstruction(Station.SERVER, amount);
       executeInstruction(chatInfoInstruction);
 
-    } else if (instruction instanceof ChangeUserInstruction) {
+    }
+    else if (instruction instanceof ChangeUserInstruction) {
       this.user = ((ChangeUserInstruction) instruction).getUser();
     }
     else {

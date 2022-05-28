@@ -32,7 +32,8 @@ public class ServerCommand implements Runnable {
       ChatRoomServer chatRoomServer = new ChatRoomServer(addr, this.port, hashedPassword);
       logger.info("Starting server.");
       chatRoomServer.startServer();
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       e.printStackTrace();
     }
 
