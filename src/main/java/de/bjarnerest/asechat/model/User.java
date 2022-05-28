@@ -49,4 +49,8 @@ public class User {
     return new Gson().toJson(this);
   }
 
+  public User copy () {
+    return new User(this.username, this.color);
+  }
+
 }
