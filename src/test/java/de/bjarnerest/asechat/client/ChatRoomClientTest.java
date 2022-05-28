@@ -139,6 +139,22 @@ public class ChatRoomClientTest {
 
   }
 
+  private void catchInfo() throws IOException, InstructionInvalidException {
+
+    // Greeting message
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(mockOutputBuffered::ready);
+
+    String line = mockOutputBuffered.readLine();
+    BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.CLIENT);
+    assertInstanceOf(ChatInfoInstruction.class, instruction);
+
+    ChatInfoInstruction chatInfoInstruction = (ChatInfoInstruction) instruction;
+    assertEquals(-1, chatInfoInstruction.getConnectedClientsAmount());
+
+  }
+
   @Test
   void authenticationTest() throws Exception {
 
@@ -156,6 +172,7 @@ public class ChatRoomClientTest {
   void userMessageTest() throws Exception {
 
     catchGreeting();
+    catchInfo();
 
     fakeUserOutput.write("Hi!\n".getBytes(StandardCharsets.UTF_8));
     await()
@@ -177,6 +194,7 @@ public class ChatRoomClientTest {
   void testLeave() throws IOException, InstructionInvalidException {
 
     catchGreeting();
+    catchInfo();
 
     fakeUserOutput.write("/leave\n".getBytes(StandardCharsets.UTF_8));
     await()
@@ -269,6 +287,7 @@ public class ChatRoomClientTest {
   void testSetMessageColor() throws IOException, InstructionInvalidException {
 
     catchGreeting();
+    catchInfo();
 
     fakeUserOutput.write("/color message cyan\n".getBytes(StandardCharsets.UTF_8));
     await()
@@ -288,15 +307,10 @@ public class ChatRoomClientTest {
   void testInfoRequest() throws IOException, InstructionInvalidException {
 
     catchGreeting();
+    catchInfo();
 
     fakeUserOutput.write("/info\n".getBytes(StandardCharsets.UTF_8));
-    await()
-        .atMost(Duration.ofSeconds(2))
-        .until(mockOutputBuffered::ready);
-
-    String line = mockOutputBuffered.readLine();
-    BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.CLIENT);
-    assertInstanceOf(ChatInfoInstruction.class, instruction);
+    catchInfo();
 
   }
 
