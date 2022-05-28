@@ -1,13 +1,14 @@
 package de.bjarnerest.asechat.model;
 
 import com.google.gson.Gson;
+import de.bjarnerest.asechat.helper.UserNameHelper;
 import java.util.UUID;
 
 public class User {
 
   private final UUID id = UUID.randomUUID();
   private String username;
-  private AnsiColor color;
+  private AnsiColor color = UserNameHelper.generateColor();
 
   public User(String username) {
     this.username = username;

@@ -107,7 +107,8 @@ public class ChatRoomClient {
             "\n%sAktuell befinden sich %s Clients im Chatraum.%s\n>>>",
             color.code,
             chatInfoInstruction.getConnectedClientsAmount(),
-            AnsiColor.RESET.code);
+            AnsiColor.RESET.code
+    );
   }
 
   public void authenticate() throws Exception {
@@ -159,12 +160,19 @@ public class ChatRoomClient {
 
               String[] split = line.split(" ");
               String colorStr = split[2].toUpperCase();
-              AnsiColor color = AnsiColor.valueOf(colorStr);
+              AnsiColor color = user.getColor();
+              try {
+                color = AnsiColor.valueOf(colorStr);
+              } catch (IllegalArgumentException ex) {
+                getUserOutputStream().print("\nThis is not a valid color.\n>>>");
+              }
+
 
               if(split[1].equals("username")) {
                 user.setColor(color);
                 try {
                   sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
+                  printName();
                 }
                 catch (Exception e) {
                   e.printStackTrace();
@@ -175,6 +183,7 @@ public class ChatRoomClient {
               ChatChangeColorInstruction instruction = new ChatChangeColorInstruction(Station.CLIENT, color);
               try {
                 sendInstruction(instruction);
+                getUserOutputStream().printf("\nYour messages are now %s%s%s\n>>>", color.code, color, AnsiColor.RESET.code);
               }
               catch (Exception e) {
                 throw new RuntimeException(e);
@@ -198,6 +207,7 @@ public class ChatRoomClient {
               user.setUsername(split[1]);
               try {
                 sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
+                printName();
               }
               catch (Exception e) {
                 e.printStackTrace();
@@ -222,6 +232,10 @@ public class ChatRoomClient {
 
     userThread.start();
 
+  }
+
+  private void printName() {
+    getUserOutputStream().printf("\nYour name has been set to %s%s%s\n>>>", user.getColor().code, user.getUsername(), AnsiColor.RESET.code);
   }
 
 }

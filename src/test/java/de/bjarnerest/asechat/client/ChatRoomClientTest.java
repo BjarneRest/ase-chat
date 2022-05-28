@@ -135,7 +135,7 @@ public class ChatRoomClientTest {
     assertInstanceOf(ChatMessageSendInstruction.class, instruction);
 
     ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
-    assertEquals("Hello Welt. Hier ist username", chatMessageSendInstruction.getMessage().getMessageText());
+    assertEquals("Hallo Welt. Hier ist username", chatMessageSendInstruction.getMessage().getMessageText());
     assertEquals("username", chatMessageSendInstruction.getMessage().getMessageSender().getUsername());
 
 
@@ -231,7 +231,7 @@ public class ChatRoomClientTest {
         .until(() -> fakeUserScreen.available() > 0);
 
     String expected = "\n"
-        + AnsiColor.RESET.code
+        + dummyUser.getColor().code
         + dummyUser.getUsername()
         + AnsiColor.RESET.code
         + ": "
