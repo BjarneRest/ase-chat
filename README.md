@@ -57,3 +57,6 @@ Possible in chat commands:
 | /info                                | Displays the number of clients connected to the user                       |
 | /username + the username you want    | Change your username                                                       |
 
+Colors to choose from:
+
+Black, Red, Green, Yellow, Blue, Purple, Cyan and White
