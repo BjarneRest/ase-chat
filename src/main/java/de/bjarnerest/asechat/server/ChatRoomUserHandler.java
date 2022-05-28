@@ -1,16 +1,7 @@
 package de.bjarnerest.asechat.server;
 
 import de.bjarnerest.asechat.helper.InstructionNameHelper;
-import de.bjarnerest.asechat.instruction.BaseInstruction;
-import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
-import de.bjarnerest.asechat.instruction.ChatInfoInstruction;
-import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
-import de.bjarnerest.asechat.instruction.ChatMessageEchoInstruction;
-import de.bjarnerest.asechat.instruction.ChatMessageSendInstruction;
-import de.bjarnerest.asechat.instruction.InstructionInvalidException;
-import de.bjarnerest.asechat.instruction.SystemAuthenticateInstruction;
-import de.bjarnerest.asechat.instruction.SystemErrorInstruction;
-import de.bjarnerest.asechat.instruction.SystemReadyInstruction;
+import de.bjarnerest.asechat.instruction.*;
 import de.bjarnerest.asechat.model.AnsiColor;
 import de.bjarnerest.asechat.model.Message;
 import de.bjarnerest.asechat.model.Station;
@@ -21,13 +12,15 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import de.bjarnerest.asechat.model.User;
 import org.jetbrains.annotations.NotNull;
 
 class ChatRoomUserHandler extends Thread {
 
   private final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
   private final ChatRoomServer chatRoomServer;
-  private final UUID clientId;
+  private User user;
   
   private AnsiColor color = null;
   private final Socket clientSocket;
@@ -39,8 +32,6 @@ class ChatRoomUserHandler extends Thread {
 
     this.chatRoomServer = chatRoomServer;
     this.clientSocket = clientSocket;
-    this.clientId = UUID.randomUUID();
-    logger.fine("Assigned clientId " + this.clientId);
 
   }
 
@@ -76,7 +67,7 @@ class ChatRoomUserHandler extends Thread {
       e.printStackTrace();
     } finally {
 
-      logger.info("Removing user handler for client " + this.clientId);
+      logger.info("Removing user handler for client " + user.getId());
       chatRoomServer.removeUserHandler(this);
       try {
 
@@ -148,7 +139,7 @@ class ChatRoomUserHandler extends Thread {
       ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
 
       // Client wants so send message
-      logger.fine("Received message from client " + this.clientId);
+      logger.fine("Received message from client " + user.getId());
 
       logger.fine("Message content: " + chatMessageSendInstruction.getMessage().toJson());
 
@@ -156,12 +147,12 @@ class ChatRoomUserHandler extends Thread {
         String messText = chatMessageSendInstruction.getMessage().getMessageText();
         chatMessageSendInstruction.getMessage().setMessageText(color.code + messText + AnsiColor.RESET.code);
       }
-      chatRoomServer.publishMessage(chatMessageSendInstruction.getMessage(), this.clientId);
+      chatRoomServer.publishMessage(chatMessageSendInstruction.getMessage());
       this.executeInstruction(new ChatMessageEchoInstruction(Station.SERVER, chatMessageSendInstruction.getMessage()));
 
     } else if (instruction instanceof ChatLeaveInstruction) {
 
-      logger.info("User left chatroom: " + this.clientId);
+      logger.info("User left chatroom: " + user.getId());
       this.left = true;
 
     } else if (instruction instanceof ChatChangeColorInstruction) {
@@ -177,9 +168,12 @@ class ChatRoomUserHandler extends Thread {
       ChatInfoInstruction chatInfoInstruction = new ChatInfoInstruction(Station.SERVER, amount);
       executeInstruction(chatInfoInstruction);
 
-    } else {
+    } else if (instruction instanceof ChangeUserInstruction) {
+      this.user = ((ChangeUserInstruction) instruction).getUser();
+    }
+    else {
 
-      logger.warning("Client (" + this.clientId + ") command cannot be interpreted: " + line);
+      logger.warning("Client (" + user.getId() + ") command cannot be interpreted: " + line);
       this.executeInstruction(new SystemErrorInstruction(Station.SERVER, "no_such_command"));
 
     }
@@ -199,8 +193,12 @@ class ChatRoomUserHandler extends Thread {
 
   }
 
-  @NotNull
-  public UUID getClientId() {
-    return clientId;
+  public User getUser() {
+    return user;
   }
+
+  public UUID getUserId() {
+    return user != null ? user.getId() : UUID.randomUUID();
+  }
+
 }

@@ -1,13 +1,7 @@
 package de.bjarnerest.asechat.client;
 
 import de.bjarnerest.asechat.helper.InstructionNameHelper;
-import de.bjarnerest.asechat.instruction.BaseInstruction;
-import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
-import de.bjarnerest.asechat.instruction.ChatInfoInstruction;
-import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
-import de.bjarnerest.asechat.instruction.ChatMessageSendInstruction;
-import de.bjarnerest.asechat.instruction.SystemAuthenticateInstruction;
-import de.bjarnerest.asechat.instruction.SystemReadyInstruction;
+import de.bjarnerest.asechat.instruction.*;
 import de.bjarnerest.asechat.model.AnsiColor;
 import de.bjarnerest.asechat.model.Message;
 import de.bjarnerest.asechat.model.Station;
@@ -70,6 +64,7 @@ public class ChatRoomClient {
       if (instruction instanceof SystemReadyInstruction) {
         authenticated = true;
         Message message = new Message("Hello Welt. Hier ist " + user.getUsername(), user);
+        this.sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
         this.sendInstruction(new ChatMessageSendInstruction(Station.CLIENT, message));
         this.sendInstruction(new ChatInfoInstruction(Station.CLIENT));
         handleUserInput();
@@ -79,8 +74,7 @@ public class ChatRoomClient {
         ChatMessageSendInstruction chatMessageSendInstruction = (ChatMessageSendInstruction) instruction;
         Message message = chatMessageSendInstruction.getMessage();
         User messageSender = message.getMessageSender();
-        AnsiColor userColor = messageSender.getColor() != null ? messageSender.getColor() : AnsiColor.RESET;
-        getUserOutputStream().printf("\n%s%s%s: %s\n>>> ", userColor.code, messageSender.getUsername(), AnsiColor.RESET.code, message.getMessageText());
+        getUserOutputStream().printf("\n%s%s%s: %s\n>>> ", messageSender.getColor().code, messageSender.getUsername(), AnsiColor.RESET.code, message.getMessageText());
       } else if (instruction instanceof ChatInfoInstruction) {
         ChatInfoInstruction chatInfoInstruction = (ChatInfoInstruction) instruction;
 
@@ -147,6 +141,11 @@ public class ChatRoomClient {
 
               if(split[1].equals("username")) {
                 user.setColor(color);
+                try {
+                  sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
+                } catch (Exception e) {
+                  e.printStackTrace();
+                }
                 continue;
               }
 
@@ -167,6 +166,14 @@ public class ChatRoomClient {
                 throw new RuntimeException(e);
               }
 
+            } else if (line.startsWith("/username ")) {
+              String[] split = line.split(" ");
+              user.setUsername(split[1]);
+              try {
+                sendInstruction(new ChangeUserInstruction(Station.CLIENT, user));
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
             }
 
             continue;

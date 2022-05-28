@@ -71,13 +71,13 @@ public class ChatRoomServer {
 
   }
 
-  public void publishMessage(Message message, UUID publisher) {
+  public void publishMessage(Message message) {
 
     logger.info("Publishing message: " + message.toJson());
-    logger.fine("Message sent by " + publisher);
+    logger.fine("Message sent by " + message.getMessageSender().getId());
     this.userHandlers.stream()
         .filter(userHandler -> userHandler.authenticated)
-        .filter(userHandler -> !userHandler.getClientId().equals(publisher))
+        .filter(userHandler -> !userHandler.getUserId().equals(message.getMessageSender().getId()))
         .forEach(userHandler -> userHandler.publishMessage(message));
 
   }
