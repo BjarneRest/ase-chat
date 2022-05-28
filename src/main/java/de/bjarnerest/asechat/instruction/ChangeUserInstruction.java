@@ -56,4 +56,8 @@ public class ChangeUserInstruction extends BaseInstruction {
                 + "=" + this.user.toJson();
     }
 
+    public ChangeUserInstruction copywithStation(Station origin) {
+        return new ChangeUserInstruction(origin, user);
+    }
+
 }
