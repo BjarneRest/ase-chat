@@ -8,6 +8,7 @@ import de.bjarnerest.asechat.client.ChatRoomClient;
 import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.instruction.BaseInstruction;
 import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
+import de.bjarnerest.asechat.instruction.ChatInfoInstruction;
 import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
 import de.bjarnerest.asechat.instruction.ChatMessageSendInstruction;
 import de.bjarnerest.asechat.instruction.InstructionInvalidException;
@@ -280,6 +281,22 @@ public class ChatRoomClientTest {
 
     ChatChangeColorInstruction chatChangeColorInstruction = (ChatChangeColorInstruction) instruction;
     assertEquals(AnsiColor.CYAN, chatChangeColorInstruction.getColor());
+
+  }
+
+  @Test
+  void testInfoRequest() throws IOException, InstructionInvalidException {
+
+    catchGreeting();
+
+    fakeUserOutput.write("/info\n".getBytes(StandardCharsets.UTF_8));
+    await()
+        .atMost(Duration.ofSeconds(2))
+        .until(mockOutputBuffered::ready);
+
+    String line = mockOutputBuffered.readLine();
+    BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.CLIENT);
+    assertInstanceOf(ChatInfoInstruction.class, instruction);
 
   }
 

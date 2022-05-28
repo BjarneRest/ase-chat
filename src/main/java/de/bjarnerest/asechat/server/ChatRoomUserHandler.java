@@ -3,6 +3,7 @@ package de.bjarnerest.asechat.server;
 import de.bjarnerest.asechat.helper.InstructionNameHelper;
 import de.bjarnerest.asechat.instruction.BaseInstruction;
 import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
+import de.bjarnerest.asechat.instruction.ChatInfoInstruction;
 import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
 import de.bjarnerest.asechat.instruction.ChatMessageEchoInstruction;
 import de.bjarnerest.asechat.instruction.ChatMessageSendInstruction;
@@ -168,6 +169,13 @@ class ChatRoomUserHandler extends Thread {
       ChatChangeColorInstruction chatChangeColorInstruction = (ChatChangeColorInstruction) instruction;
       this.color = chatChangeColorInstruction.getColor();
 
+
+    } else if (instruction instanceof ChatInfoInstruction) {
+
+      // User wants clients amount
+      int amount = chatRoomServer.getConnectedClientsAmount();
+      ChatInfoInstruction chatInfoInstruction = new ChatInfoInstruction(Station.SERVER, amount);
+      executeInstruction(chatInfoInstruction);
 
     } else {
 

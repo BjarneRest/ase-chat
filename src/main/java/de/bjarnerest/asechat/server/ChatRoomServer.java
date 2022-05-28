@@ -82,6 +82,10 @@ public class ChatRoomServer {
 
   }
 
+  public int getConnectedClientsAmount() {
+    return this.userHandlers.size();
+  }
+
   public void removeUserHandler(ChatRoomUserHandler handler) {
 
     this.userHandlers.remove(handler);

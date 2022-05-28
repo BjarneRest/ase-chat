@@ -3,9 +3,14 @@ package de.bjarnerest.asechat.server;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import de.bjarnerest.asechat.helper.HashingHelper;
+import de.bjarnerest.asechat.helper.InstructionNameHelper;
+import de.bjarnerest.asechat.instruction.BaseInstruction;
+import de.bjarnerest.asechat.instruction.ChatInfoInstruction;
 import de.bjarnerest.asechat.instruction.ChatLeaveInstruction;
+import de.bjarnerest.asechat.instruction.InstructionInvalidException;
 import de.bjarnerest.asechat.model.Message;
 import de.bjarnerest.asechat.model.Station;
 import de.bjarnerest.asechat.model.User;
@@ -185,6 +190,37 @@ class ChatRoomServerTest {
     ChatLeaveInstruction leaveInstruction = new ChatLeaveInstruction(Station.CLIENT);
     mockSocket1.writeLine(leaveInstruction.toString());
     mockSocket1.awaitReady();
+
+    serverThread.interrupt();
+
+  }
+
+  @Test
+  void testInfo() throws IOException, InstructionInvalidException {
+
+    this.prepareSubject(InetAddress.getByName("127.0.0.1"), 50501);
+
+    // Mock client socket
+    final MockSocket mockSocket1 = new MockSocket();
+    final MockSocket mockSocket2 = new MockSocket();
+    Mockito.when(this.serverSocket.accept())
+        .thenReturn(mockSocket1.getSocket(), mockSocket2.getSocket());
+    this.subject.setTestModeMaxClients(2);
+    Thread serverThread = this.startServer();
+
+    ChatInfoInstruction chatInfoInstructionClient = new ChatInfoInstruction(Station.CLIENT);
+    mockSocket1.writeLine(chatInfoInstructionClient.toString());
+    mockSocket1.awaitReady();
+    // system:ready
+    mockSocket1.readLine();
+    mockSocket1.awaitReady();
+
+    String line = mockSocket1.readLine();
+    BaseInstruction instruction = InstructionNameHelper.parseInstruction(line, Station.SERVER);
+    assertInstanceOf(ChatInfoInstruction.class, instruction);
+
+    ChatInfoInstruction chatInfoInstructionServer = (ChatInfoInstruction) instruction;
+    assertEquals(2, chatInfoInstructionServer.getConnectedClientsAmount());
 
     serverThread.interrupt();
 

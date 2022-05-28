@@ -1,6 +1,7 @@
 package de.bjarnerest.asechat.client;
 
 import de.bjarnerest.asechat.instruction.ChatChangeColorInstruction;
+import de.bjarnerest.asechat.instruction.ChatInfoInstruction;
 import de.bjarnerest.asechat.model.AnsiColor;
 import de.bjarnerest.asechat.model.Message;
 import de.bjarnerest.asechat.model.Station;
@@ -66,6 +67,7 @@ public class ChatRoomClient {
         authenticated = true;
         Message message = new Message("Hello Welt. Hier ist " + user.getUsername(), user);
         this.sendLine("chat:message:send=" + message.toJson());
+        this.sendLine("chat:info");
         handleUserInput();
       } else if (line.equals("system:authenticate")) {
         this.authenticate();
@@ -75,6 +77,12 @@ public class ChatRoomClient {
         User messageSender = message.getMessageSender();
         AnsiColor userColor = messageSender.getColor() != null ? messageSender.getColor() : AnsiColor.RESET;
         getUserOutputStream().printf("\n%s%s%s: %s\n>>> ", userColor.code, messageSender.getUsername(), AnsiColor.RESET.code, message.getMessageText());
+      } else if (line.startsWith("chat:info=")) {
+        String amount = line.split("=")[1];
+
+        AnsiColor color = AnsiColor.RED;
+        getUserOutputStream().printf("\n%sAktuell befinden sich %s Clients im Chatraum.%s\n>>>", color.code, amount, AnsiColor.RESET.code);
+
       }
     }
   }
@@ -136,6 +144,15 @@ public class ChatRoomClient {
                 throw new RuntimeException(e);
               }
 
+
+            } else if(line.equals("/info")) {
+
+              ChatInfoInstruction instruction = new ChatInfoInstruction(Station.CLIENT);
+              try {
+                sendLine(instruction.toString());
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
 
             }
 
