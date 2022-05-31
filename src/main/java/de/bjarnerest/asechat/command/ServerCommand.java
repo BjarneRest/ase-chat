@@ -31,6 +31,7 @@ public class ServerCommand implements Runnable {
       String hashedPassword = this.password.isEmpty() ? "" : HashingHelper.hashSha512WithSalt(this.password);
       ChatRoomServer chatRoomServer = new ChatRoomServer(addr, this.port, hashedPassword);
       logger.info("Starting server.");
+      logger.info("Server running at " + this.hostIp + ":" + this.port);
       chatRoomServer.startServer();
     }
     catch (IOException e) {
