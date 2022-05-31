@@ -10,7 +10,7 @@ The executable JAR file can be downloaded in the [Releases](https://github.com/B
 
 Starting the server component:
 
-`java -jar ase-chat.jar Server`
+`java -jar AseChat.jar Server`
 
 Arguments:
 
@@ -26,7 +26,7 @@ Arguments:
 
 Starting the client component:
 
-`java -jar ase-chat.jar Client`
+`java -jar AseChat.jar Client`
 
 Arguments
 
