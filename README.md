@@ -58,6 +58,8 @@ Possible in chat commands:
 | /color username + the color you want | Changes the color of the username                                          |
 | /info                                | Displays the number of clients connected to the user                       |
 | /username + the username you want    | Change your username                                                       |
+| /png + path/to/image.png             | Send a png image                                                           |
+| /save                                | save a sent png image to yout local storage                                |
 
 Colors to choose from:
 
