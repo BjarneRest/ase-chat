@@ -4,6 +4,8 @@
 
 The application consists of two components: The server and the client.
 
+The executable JAR file can be downloaded in the [Releases](https://github.com/BjarneRest/ase-chat/releases) section.
+
 ## Server component
 
 Starting the server component:
